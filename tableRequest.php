@@ -16,17 +16,25 @@ class tableRequest{
         }
     }
 
+    
     // POST -------------------------------------------------------------------
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if (! (empty($body['uid']) || empty($body['name']))) {
-            $merchant = $body['uid'];
+        if (! (empty($body['merchantUid']) || empty($body['name']))) {
+            $merchantUid = $body['merchantUid'];
             $name = $body['name'];
             
-            $sql_query = "INSERT INTO "."table"." (name) VALUES ('$name')";
+            // table is exist
+            $sql_query = "SELECT * FROM tablelist WHERE merchantUid = '$merchantUid' AND name = '$name'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) > 0){
+                return array("table is exist", 403, 'fail');
+            }
+
+            $sql_query = "INSERT INTO tablelist (name, merchantUid) VALUES ('$name', '$merchantUid')";
             MysqlUtility::MysqlQuery($sql_query);
 
-            $sql_query = "SELECT * FROM table WHERE uid = '$merchant' AND name = '$name'";
+            $sql_query = "SELECT * FROM tablelist WHERE merchantUid = '$merchantUid' AND name = '$name'";
             $data = MysqlUtility::MysqlQuery($sql_query);
             $row = mysqli_fetch_array($data, MYSQLI_ASSOC);
             return array($row['uid'], 200, 'Success');
@@ -39,7 +47,15 @@ class tableRequest{
     private static function deleteFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
         $uid = $body['uid'];
-        $sql_query = "DELETE FROM table  WHERE uid = $uid";
+
+        // table do not exist
+        $sql_query = "SELECT * FROM tablelist WHERE uid = '$uid'";
+        $data = MysqlUtility::MysqlQuery($sql_query);
+        if(mysqli_num_rows($data) == 0){
+            return array("table do not exist", 403, 'fail');
+        }
+
+        $sql_query = "DELETE FROM tablelist  WHERE uid = $uid";
         $data = MysqlUtility::MysqlQuery($sql_query);
         // return "Delete.";
         return array("Delete.", 200, 'Success');

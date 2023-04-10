@@ -14,3 +14,10 @@ RewriteRule ^user/login$   index.php?page=user&mode=login
 # photo
 RewriteRule ^user/photo$   index.php?page=user&mode=photo
 RewriteRule ^user/photo/([0-9]+)$   index.php?page=user&mode=photo&img=$2
+
+
+# table 
+RewriteRule ^table  index.php?page=table&mode=NULL
+
+# food
+RewriteRule ^food  index.php?page=food&mode=NULL

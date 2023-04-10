@@ -16,6 +16,12 @@ if($page == 'user'){
         require('userRequest.php');
         $data = userRequest::getRequest();
     }
+}elseif($page == 'table'){
+    require('tableRequest.php');
+    $data = tableRequest::getRequest();
+}elseif($page == 'food'){
+    require('foodRequest.php');
+    $data = foodRequest::getRequest();
 }else{
     require('Request.php');
     $data = Request::getRequest();

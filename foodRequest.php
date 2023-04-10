@@ -2,7 +2,7 @@
 
 require('connectMYSQL.php');
 
-class tableRequest{
+class foodRequest{
     private static $method_type = array('post', 'put', 'delete'); 
 
     public static function getRequest(){
@@ -19,8 +19,8 @@ class tableRequest{
     // POST -------------------------------------------------------------------
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if(!(empty($body['foodtype']) || empty($body['trackId']) || empty($body['foodRemain']) || empty($body['foodRemainTime']) || empty($body['foodRemainLine']) || empty($body['timeLine']) || empty($body['tableUid']))){
-            $foodtype = $body['foodtype'];
+        if(!(empty($body['foodType']) || empty($body['trackId']) || empty($body['foodRemain']) || empty($body['foodRemainTime']) || empty($body['foodRemainLine']) || empty($body['timeLine']) || empty($body['tableUid']))){
+            $foodType = $body['foodType'];
             $trackId = $body['trackId'];
             $foodRemain = $body['foodRemain'];
             $foodRemainTime = $body['foodRemainTime'];
@@ -28,15 +28,22 @@ class tableRequest{
             $timeLine = $body['timeLine'];
             $tableUid = $body['tableUid'];
             
-            $sql_query = "INSERT INTO "."food"." (foodtype, trackId, foodRemain, foodRemainTime, foodRemainLine, timeLine, tableUid) VALUES ('$foodtype', '$trackId', '$foodRemain', '$foodRemainTime', '$foodRemainLine', '$timeLine', '$tableUid')";
+            $sql_query = "SELECT * FROM food WHERE trackId = '$trackId' AND tableUid = '$tableUid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) > 0){
+                return array("food exist", 403, "fail");
+            }
+
+            $sql_query = "INSERT INTO "."food"." (foodType, trackId, foodRemain, foodRemainTime, foodRemainLine, timeLine, tableUid) VALUES ('$foodType', '$trackId', '$foodRemain', '$foodRemainTime', '$foodRemainLine', '$timeLine', '$tableUid')";
             MysqlUtility::MysqlQuery($sql_query);
 
-            $sql_query = "SELECT * FROM table WHERE trackId = '$trackId' AND tableUid = '$tableUid'";
+            $sql_query = "SELECT * FROM food WHERE trackId = '$trackId' AND tableUid = '$tableUid'";
             $data = MysqlUtility::MysqlQuery($sql_query);
             $row = mysqli_fetch_array($data, MYSQLI_ASSOC);
             return array($row['uid'], 200, 'Success');
-            // return 回傳格式 
-           
+            // return 回傳格式  
+        }else{
+            return array("漏填必填", 401, 'Fail');
         }
     }
 
@@ -44,9 +51,9 @@ class tableRequest{
     private static function putFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
         # parse_str(json_decode(file_get_contents('php://input'), true), $body);
-        if(!(empty('uid') || empty($body['foodtype']) || empty($body['trackId']) || empty($body['foodRemain']) || empty($body['foodRemainTime']) || empty($body['foodRemainLine']) || empty($body['timeLine']) || empty($body['tableUid']))){
+        if(!(empty($body['uid']) || empty($body['foodType']) || empty($body['trackId']) || empty($body['foodRemain']) || empty($body['foodRemainTime']) || empty($body['foodRemainLine']) || empty($body['timeLine']) || empty($body['tableUid']))){
             $uid = $body['uid'];
-            $foodtype = $body['foodtype'];
+            $foodType = $body['foodType'];
             $trackId = $body['trackId'];
             $foodRemain = $body['foodRemain'];
             $foodRemainTime = $body['foodRemainTime'];
@@ -54,12 +61,18 @@ class tableRequest{
             $timeLine = $body['timeLine'];
             $tableUid = $body['tableUid'];
 
-            $sql_query = "UPDATE food SET foodtype = '$foodtype', trackId = '$trackId', foodRemain = '$foodRemain', foodRemainTime = '$foodRemainTime', foodRemainLine = '$foodRemainLine', timeLine = '$timeLine', tableUid = '$tableUid' WHERE uid = '$uid'";
+            $sql_query = "SELECT * FROM food WHERE trackId = '$trackId' AND tableUid = '$tableUid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) > 0){
+                return array("food do not exist", 403, "fail");
+            }
+
+            $sql_query = "UPDATE food SET foodType = '$foodType', trackId = '$trackId', foodRemain = '$foodRemain', foodRemainTime = '$foodRemainTime', foodRemainLine = '$foodRemainLine', timeLine = '$timeLine', tableUid = '$tableUid' WHERE uid = '$uid'";
             MysqlUtility::MysqlQuery($sql_query);
             return array("Update.", 200, 'Success');    
 
         }else{
-            return array("漏填必填", 401, 'FailLogin');
+            return array("漏填必填", 401, 'Fail');
         }
         
 
@@ -68,11 +81,24 @@ class tableRequest{
     // Delete
     private static function deleteFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        $uid = $body['uid'];
-        $sql_query = "DELETE FROM table  WHERE uid = $uid";
-        $data = MysqlUtility::MysqlQuery($sql_query);
-        // return "Delete.";
-        return array("Delete.", 200, 'Success');
+        if(! empty($body['uid'])){
+            $uid = $body['uid'];
+
+            // food do not exist
+            $sql_query = "SELECT * FROM food WHERE uid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) == 0){
+                return array("table do not exist", 403, 'Fail');
+            }
+
+            $sql_query = "DELETE FROM food WHERE uid = $uid";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            // return "Delete.";
+            return array("Delete.", 200, 'Success');
+        }else{
+            return array("漏填必填", 401, 'FailLogin');
+        }
+        
 
     }
 }
