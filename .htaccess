@@ -1,0 +1,16 @@
+Options +FollowSymlinks
+RewriteEngine on
+
+# data
+RewriteRule ^data$   index.php?page=data
+RewriteRule ^data/(\d+)$   index.php?page=data&user_id=$1 [nc,qsa]
+
+# user
+RewriteRule ^user$   index.php?page=user&mode=none
+
+RewriteRule ^user/signin$   index.php?page=user&mode=signin
+RewriteRule ^user/login$   index.php?page=user&mode=login
+
+# photo
+RewriteRule ^user/photo$   index.php?page=user&mode=photo
+RewriteRule ^user/photo/([0-9]+)$   index.php?page=user&mode=photo&img=$2
