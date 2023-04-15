@@ -12,19 +12,20 @@ class signinRequest{
             $method_func = $method.'Func';
             return self::$method_func($_REQUEST);
         }else{
-            return array("傳入格式錯誤", 400, 'FailSignin');
+            return array("傳入格式錯誤", 400, 'Fail');
         }
     }
 
     // POST -------------------------------------------------------------------
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if (! (empty($body['name']) || empty($body['email']) || empty($body['password']) || empty($body['role']))) {    // empty($body['phoneNumber']) || empty($body['location']) 
+        if (Utility::checkIsValidData(['name', 'email', 'password', 'role'], $body!)) {    // empty($body['phoneNumber']) || empty($body['location']) 
             // 必填
             $name = $body['name'];
             $email = $body['email'];
             $password = password_hash($body['password'], PASSWORD_DEFAULT);
             $role =  ($body['role'] == 'merchant' ? 'merchant' : 'customer');
+            
             // 選填
             $phoneNumber = (empty($body['phoneNumber'])) ? NULL : $body['phoneNumber'];
             $location = (empty($body['location']) ) ? NULL : $body['location'][0].','.$body['location'][1];
@@ -35,7 +36,7 @@ class signinRequest{
 
             // exist
             if(mysqli_num_rows($data) > 0){
-                return array("帳號已存在", 403, 'FailSignin');
+                return array("帳號已存在", 403, 'Fail');
             }
 
             // create
