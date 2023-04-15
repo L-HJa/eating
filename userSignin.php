@@ -1,6 +1,7 @@
 <?php
 
 require('connectMYSQL.php');
+require_once('utility.php');
 
 class signinRequest{
     
@@ -19,7 +20,7 @@ class signinRequest{
     // POST -------------------------------------------------------------------
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if (Utility::checkIsValidData(['name', 'email', 'password', 'role'], $body!)) {    // empty($body['phoneNumber']) || empty($body['location']) 
+        if (Utility::checkIsValidData(['name', 'email', 'password', 'role'], $body)) {    // empty($body['phoneNumber']) || empty($body['location']) 
             // 必填
             $name = $body['name'];
             $email = $body['email'];
