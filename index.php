@@ -18,10 +18,24 @@ if($page == 'user'){
     }
 }elseif($page == 'table'){
     require('tableRequest.php');
-    $data = tableRequest::getRequest();
+    if($mode == 'all_table_info') {
+        // 獲取店家所有桌子資訊，不包含桌子內的食物資訊
+        $data = tableRequest::getAllTableInfo();
+    } elseif($mode == 'single_table_info') {
+        // 獲取單張桌子的資訊
+        $data = tableRequest::getSingleTableInfo();
+    } elseif($mode == 'all_table_with_food_info') {
+        // 獲取所有桌子以及當中的食物資訊
+        $data = tableRequest::getAllTableWithFoodInfo();
+    } else {
+        $data = tableRequest::getRequest();
+    }
 }elseif($page == 'food'){
     require('foodRequest.php');
     $data = foodRequest::getRequest();
+}elseif($page == 'item'){
+    require('itemRequest.php');
+    $data = itemRequest::getRequest();
 }else{
     require('Request.php');
     $data = Request::getRequest();

@@ -17,7 +17,13 @@ RewriteRule ^user/photo/([0-9]+)$   index.php?page=user&mode=photo&img=$2
 
 
 # table 
-RewriteRule ^table  index.php?page=table&mode=NULL
+RewriteRule ^table$  index.php?page=table&mode=NULL
+RewriteRule ^table/all-table-info index.php?page=table&mode=all_table_info
+RewriteRule ^table/single-table-info index.php?page=table&mode=single_table_info
+RewriteRule ^table/all-table-with-food-info index.php?page=table&mode=all_table_with_food_info
 
 # food
 RewriteRule ^food  index.php?page=food&mode=NULL
+
+#item
+RewriteRule ^item index.php?page=item&mode=NULL
