@@ -1,6 +1,7 @@
 <?php
 
 require('connectMYSQL.php');
+require_once('utility.php');
 
 class loginRequest{
     private static $method_type = array('post'); 
@@ -16,44 +17,34 @@ class loginRequest{
         }
     }
 
-    // POST -------------------------------------------------------------------
+    // POST 登入 -------------------------------------------------------------------
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if (! (empty($body['email']) || empty($body['password']) || empty($body['role']))) {
-            $account = $body['email'];
+        if(Utility::checkIsValidData(['email', 'password', 'role'], $body)) {
+            $email = $body['email'];
             $password = $body['password'];
-            $role =  ($body['role'] == 'merchant' ? 'merchant' : 'customer');
+            $role =  $body['role'];
 
-            $sql_findHashPassword = "SELECT * FROM $role WHERE email = '$account'";
+            $sql_findHashPassword = "SELECT * FROM $role WHERE email = '$email'";
             $data = MysqlUtility::MysqlQuery($sql_findHashPassword);
 
-            // do not exist
-            if(mysqli_num_rows($data) == 0){
-                // $Response_data = array('account or password is wrong!'); 
-                return array("登入錯誤", 403, 'FailLogin');  // email
-            }
-            
-            $hash = mysqli_fetch_array($data, MYSQLI_ASSOC);
-            
-            // login -->> 傳時效性驗證碼?
-            if(password_verify($password, $hash['password'])){
-                $Response_data = "success";
-                $hash['location'] = explode(',', $hash['location']);
-                $hash['role'] = "merchant";
-                # echo $hash['location'];
+            // 存在&帳密正確
+            if(mysqli_num_rows($data) > 0){
+                $row = mysqli_fetch_array($data, MYSQLI_ASSOC);
+                if(password_verify($password, $row['password'])){
+                    $row['location'] = explode(',', $row['location']);
+                    $row['role'] = "merchant";
 
-                // return $hash;
-                return array($hash, 200, 'Success');
-                
-            }else{
-                // $Response_data = "account or password is wrong.";
-                return array("登入錯誤", 403, 'FailLogin');   // password
+                    // 回傳所有個人資訊
+                    return array($row, 200, 'Success');
+                }
             }
+
+            return array("登入錯誤", 403, 'Fail');   
 
         }else{
-            // return "something loss";
-            return array("漏填必填", 401, 'FailLogin');
-            // account(email), password為必填項目
+            // email, password role 為必填項目
+            return array("漏填必填", 401, 'Fail');
         } 
     }
 }
