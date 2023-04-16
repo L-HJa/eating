@@ -1,7 +1,9 @@
 <?php
 require('connectMYSQL.php');
+require_once('utility.php');
+
 class userRequest{
-    private static $method_type = array('get', 'post', 'put', 'delete');
+    private static $method_type = array('put', 'delete');
 
     public static function getRequest(){
         $method = strtolower($_SERVER['REQUEST_METHOD']);
@@ -16,45 +18,41 @@ class userRequest{
     // PUT Update
     private static function putFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        # parse_str(json_decode(file_get_contents('php://input'), true), $body);
 
-        if(!(empty($body['uid']) || empty($body['name']) || empty($body['email']) || empty($body['password']) || empty($body['role']))){
+        if(Utility::checkIsValidData(['uid', 'name', 'email', 'password', 'role'], $body)){
+            // 必要
             $uid = $body['uid'];
             $name = $body['name'];
             $email = $body['email'];
             $password = password_hash($body['password'], PASSWORD_DEFAULT);
             $role =  ($body['role'] == 'merchant' ? 'merchant' : 'customer');
 
-            // 非必要
-            $photo = isset($body['photo']) ? $body['photo'] : NULL;
-            $phoneNumber = isset($body['phoneNumber']) ? $body['phoneNumber'] : NULL;
-            $location = isset($body['location']) ? $body['location'][0].','.$body['location'][1] : NULL;
-            // $location = $body['location'][0].','.$body['location'][1];
-            $intro = isset($body['intro']) ? $body['intro'] : NULL;
-            
-
-            //  -email  (更改的 email 必須不同)
             $sql_query = "SELECT * FROM $role WHERE uid = '$uid'";
             $data = MysqlUtility::MysqlQuery($sql_query);
             $row = mysqli_fetch_array($data);
-            // email 有更改
+
+            // 非必要
+            $photo = Utility::checkIsValidData(['photo'], $body) ? $body['photo'] : $row['photo'];
+            $phoneNumber = Utility::checkIsValidData(['phoneNumber'], $body) ? $body['phoneNumber'] : $row['phoneNumber'];
+            $location = Utility::checkIsValidData(['location'], $body) ? $body['location'][0].','.$body['location'][1] : $row['location'];
+            $intro = Utility::checkIsValidData(['intro'], $body) ? $body['intro'] : $row['intro'];
+
+            // (更改的 email 必須不同)
+            // email 不同&已註冊
             if($row['email'] != $email){
                 $sql_query = "SELECT * FROM $role WHERE email = '$email'";
                 $data = MysqlUtility::MysqlQuery($sql_query);
                 if(mysqli_num_rows($data) > 0){     // email 存在
-                    return array("更新失敗 該 email 已存在!", 403, 'Fail');
+                    return array("更新失敗 該email已存在", 403, 'Fail');
                 }
             }
-
 
             $sql_query = "UPDATE $role SET name = '$name', phoneNumber = '$phoneNumber', email = '$email', password = '$password', location = '$location', intro = '$intro', photo = '$photo' WHERE uid = '$uid'";
             $data = MysqlUtility::MysqlQuery($sql_query);
             
-            // 回傳 ??? 
-            // return "Update.";
-            return array("Update.", 200, 'Success');    
+            return array("更新成功.", 200, 'Success');    
         }else{
-            return array("漏填必填", 401, 'FailLogin');
+            return array("漏填必填", 401, 'Fail');
         }
         
 
@@ -63,16 +61,25 @@ class userRequest{
     // Delete
     private static function deleteFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        $uid = $body['uid'];
-        $role =  ($body['role'] == 'merchant' ? 'merchant' : 'customer');
-        $sql_query = "DELETE FROM $role  WHERE uid = $uid";
-        $data = MysqlUtility::MysqlQuery($sql_query);
-        // return "Delete.";
-        return array("Delete.", 200, 'Success');
-
+        if(Utility::checkIsValidData(['uid', 'role'], $body)){
+            $uid = $body['uid'];
+            $role =  $body['role'];
+            
+            $sql_query = "SELECT * FROM $role WHERE uid = $uid";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            
+            if(mysqli_num_rows($data) != 0){
+                $sql_query = "DELETE FROM $role  WHERE uid = $uid";
+                $data = MysqlUtility::MysqlQuery($sql_query);
+                return array("刪除成功", 200, 'Success');
+            }else{
+                return array("無該帳號", 403, 'Fail');
+            }
+            
+        }else{
+            return array("漏填必填", 401, 'Fail');
+        }
     }
-
 }
-// 早安:)))))  LIYU到此一遊 我來搞破壞喔 你在實驗室了呀
 
 ?>
