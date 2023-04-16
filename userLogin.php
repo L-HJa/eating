@@ -40,11 +40,11 @@ class loginRequest{
                 }
             }
 
-            return array("登入錯誤", 403, 'Fail');   
+            return array("帳密錯誤", 403, 'Fail');   
 
         }else{
             // email, password role 為必填項目
-            return array("漏填必填", 401, 'Fail');
+            return array("缺少必要資料", 401, 'Fail');
         } 
     }
 }
