@@ -84,6 +84,51 @@ class itemRequest{
             return array("漏填必填", 401, 'Fail');
         }
     }
+
+
+
+    // 獲得店家所有item
+    public static function getAllItem(){
+        $body = json_decode(file_get_contents('php://input'), True);
+        if(Utility::checkIsValidData(['merchantUid'], $body)){
+            $merchantUid = $body['merchantUid'];
+
+            $sql_query = "SELECT * FROM merchant WHERE uid = '$merchantUid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) != 0){
+                $sql_query = "SELECT * FROM item WHERE merchantUid = '$merchantUid'";
+                $data = MysqlUtility::MysqlQuery($sql_query);
+
+                $cnt = 0;
+                $result = array();
+                $numOfData = mysqli_num_rows($data);
+                if($numOfData != 0){
+                    while($numOfData){
+                        $row = mysqli_fetch_array($data);
+                        $uid = $row['uid'];
+                        $item = $row['item'];
+                        $offset = explode(',', $row['offset']);   
+
+                        $result[$cnt] = array(
+                            "uid" => $uid,
+                            "item" => $item,
+                            "offset" => $offset,
+                        );
+
+                        $numOfData--;
+                        $cnt++;
+                    }
+                    return array($result, 200, "Success");
+                }else{
+                    return array("該店無物件資訊", 200, "Fail");
+                }
+            }else{
+                return array("無此店家", 403, "Fail");
+            }
+        }else{
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
 }
 
 ?>
