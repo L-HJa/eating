@@ -2,28 +2,33 @@ Options +FollowSymlinks
 RewriteEngine on
 
 # data
-RewriteRule ^data$   index.php?page=data
-RewriteRule ^data/(\d+)$   index.php?page=data&user_id=$1 [nc,qsa]
+RewriteRule ^data$   index.php?page=data&user=merchant
+RewriteRule ^data/(\d+)$   index.php?page=data&user=merchant&user_id=$1 [nc,qsa]
 
 # user
-RewriteRule ^user$   index.php?page=user&mode=none
+RewriteRule ^user$   index.php?page=user&mode=none&user=merchant
+RewriteRule ^user/signin$   index.php?page=user&mode=signin&user=merchant
+RewriteRule ^user/login$   index.php?page=user&mode=login&user=merchant
 
-RewriteRule ^user/signin$   index.php?page=user&mode=signin
-RewriteRule ^user/login$   index.php?page=user&mode=login
+RewriteRule ^user/customer$   index.php?page=user&mode=none&user=customer
+RewriteRule ^user/signin/customer$   index.php?page=user&mode=signin&user=customer
+RewriteRule ^user/login/customer$   index.php?page=user&mode=login&user=customer
 
 # photo
-RewriteRule ^user/photo$   index.php?page=user&mode=photo
-RewriteRule ^user/photo/([0-9]+)$   index.php?page=user&mode=photo&img=$2
+RewriteRule ^user/photo$   index.php?page=user&mode=photo&user=merchant
+RewriteRule ^user/photo/([0-9]+)$   index.php?page=user&mode=photo&img=$2&user=merchant
 
 
 # table 
-RewriteRule ^table$  index.php?page=table&mode=NULL
-RewriteRule ^table/all-table-info index.php?page=table&mode=all_table_info
-RewriteRule ^table/single-table-info index.php?page=table&mode=single_table_info
-RewriteRule ^table/all-table-with-food-info index.php?page=table&mode=all_table_with_food_info
+RewriteRule ^table$  index.php?page=table&mode=NULL&user=merchant
+RewriteRule ^table/all-table-info index.php?page=table&mode=all_table_info&user=merchant
+RewriteRule ^table/single-table-info index.php?page=table&mode=single_table_info&user=merchant
+RewriteRule ^table/all-table-with-food-info index.php?page=table&mode=all_table_with_food_info&user=merchant
+RewriteRule ^table/check-table-is-exist index.php?page=table&mode=check_table_is_exist&user=merchant
 
 # food
-RewriteRule ^food  index.php?page=food&mode=NULL
+RewriteRule ^food  index.php?page=food&mode=NULL&user=merchant
 
 #item
-RewriteRule ^item index.php?page=item&mode=NULL
+RewriteRule ^item$ index.php?page=item&mode=NULL&user=merchant
+RewriteRule ^item/all-item-of-merchant$ index.php?page=item&mode=all-item-of-merchant&user=merchant

@@ -41,7 +41,7 @@ class tableRequest{
         if(Utility::checkIsValidData(["merchantUid", "name", "capacity", "offset"], $body)) {
             $merchantUid = $body['merchantUid'];
             $name = $body['name'];
-            $seat = $body['capacity'];
+            $capacity = $body['capacity'];
             $offset = $body['offset'];
             $implodeOffset = implode(',', $offset);
                 
@@ -52,7 +52,7 @@ class tableRequest{
                 return array("table is exist", 403, 'fail');
             }
 
-            $sql_query = "INSERT INTO tablelist (name, merchantUid, seat, offset) VALUES ('$name', '$merchantUid', '$seat', '$implodeOffset')";
+            $sql_query = "INSERT INTO tablelist (name, merchantUid, capacity, offset) VALUES ('$name', '$merchantUid', '$capacity', '$implodeOffset')";
             MysqlUtility::MysqlQuery($sql_query);
 
             $sql_query = "SELECT * FROM tablelist WHERE merchantUid = '$merchantUid' AND name = '$name'";
@@ -61,7 +61,7 @@ class tableRequest{
             return array($row['uid'], 200, 'Success');
             // return 回傳格式 
         } else {
-            array("缺少必要資料", 403, "Fail");
+            array("缺少必要資料", 403, "Fail"); // ["merchantUid", "name", "capacity", "offset"]
         }
     }
 
@@ -75,7 +75,7 @@ class tableRequest{
             $capacity = $body["capacity"];
             $offset = implode(",", $body["offset"]);
         
-            $sql_query = "UPDATE tablelist SET name = '$name', seat = '$capacity', offset = '$offset' WHERE uid = '$uid'";
+            $sql_query = "UPDATE tablelist SET name = '$name', capacity = '$capacity', offset = '$offset' WHERE uid = '$uid'";
             $_ = MysqlUtility::MysqlQuery($sql_query);
             return array("Success", 200, "Success");
         } else {
@@ -155,7 +155,7 @@ class tableRequest{
             }
             $tableInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
             $name = $tableInfo["name"];
-            $capacity = $tableInfo["seat"];
+            $capacity = $tableInfo["capacity"];
             $offset = explode(",", $tableInfo["offset"]);
             $uid = $tableInfo["uid"];
             $merchantUid = $tableInfo["merchantUid"];
@@ -180,7 +180,7 @@ class tableRequest{
             while($numberOfTable) {
                 $tableInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
                 $name = $tableInfo["name"];
-                $capacity = $tableInfo["seat"];
+                $capacity = $tableInfo["capacity"];
                 $offset = explode(",", $tableInfo["offset"]);
                 $uid = $tableInfo["uid"];
                 $merchantUid = $tableInfo["merchantUid"];
@@ -209,6 +209,7 @@ class tableRequest{
             while($numberOfTable) {
                 $tableInfo = mysqli_fetch_array($tableData, MYSQLI_ASSOC);
                 $tableUid = $tableInfo["uid"];
+                $tableName = $tableInfo["name"];
                 $foodSqlQuery = "SELECT * FROM food WHERE tableUid = '$tableUid'";
                 $foodData = MysqlUtility::MysqlQuery($foodSqlQuery);
                 $numberOfFood = mysqli_num_rows($foodData);
@@ -223,7 +224,7 @@ class tableRequest{
                     $foodRemainLine = explode(",", $foodInfo["foodRemainLine"]);
                     $timeLine = explode(",", $foodInfo["timeLine"]);
                     $timeLine = array_map('intval', $timeLine);
-                    $results[$tableUid][$cnt] = array(
+                    $results[$tableName][$cnt] = array(
                         "uid"=> $foodUid, "name"=> $foodType, "trackId"=> $trackId, "foodRemain"=> $foodRemain, 
                         "foodRemainTime"=> $foodRemainTime, "foodRemainLine"=> $foodRemainLine, "timeLine"=> $timeLine
                     );
@@ -235,6 +236,30 @@ class tableRequest{
             return array(array("results"=> $results), 200, "Success");
         } else {
             return array("缺少必要資訊", 403, "Fail");
+        }
+    }
+
+    // 查看是否有該桌子存在，給後端使用的
+    // 文檔尚未填寫
+    public static function checkTableIsExist() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["tableUid", "account"], $body)) {
+            $tableUid = $body["tableUid"];
+            $account = $body["account"];
+            $sql_query = "SELECT * FROM merchant WHERE email = '$account'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            $userInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
+            $uid = $userInfo["uid"];
+            $sql_query = "SELECT * FROM tablelist WHERE uid = '$tableUid' AND merchantUid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            $numberOfTable = mysqli_num_rows($data);
+            if($numberOfTable == 1) {
+                return array("Success", 200, "Success");
+            } else {
+                return array("查無資料", 404, "Not Found Table");
+            }
+        } else {
+            return array("缺少必要資料", 403, "Fail");
         }
     }
 }

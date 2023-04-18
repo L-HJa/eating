@@ -113,6 +113,7 @@ class itemRequest{
                             "uid" => $uid,
                             "item" => $item,
                             "offset" => $offset,
+                            "merchantUid" => $merchantUid
                         );
 
                         $numOfData--;
