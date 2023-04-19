@@ -45,6 +45,13 @@ if($user == 'merchant'){
         }else{
             $data = itemRequest::getRequest();
         }
+    }elseif($page == 'model_weight'){
+        require('modelWeight.php');
+        if($mode == 'upload-object-detection-single-image') {
+            $data = modelWeight::uploadObjectDetectionSingleImage();
+        } elseif($mode == 'train-object-detection-model') {
+            $data = modelWeight::trainObjectDetectionModel();
+        }
     }else{
         require('Request.php');
         $data = Request::getRequest();

@@ -32,3 +32,7 @@ RewriteRule ^food  index.php?page=food&mode=NULL&user=merchant
 #item
 RewriteRule ^item$ index.php?page=item&mode=NULL&user=merchant
 RewriteRule ^item/all-item-of-merchant$ index.php?page=item&mode=all-item-of-merchant&user=merchant
+
+#model weight
+RewriteRule ^model-weight/upload-object-detection-single-image$ index.php?page=model_weight&mode=upload-object-detection-single-image&user=merchant
+RewriteRule ^model-weight/train-object-detection-model$ index.php?page=model_weight&mode=train-object-detection-model&user=merchant
