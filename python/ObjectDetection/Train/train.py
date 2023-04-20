@@ -1,41 +1,37 @@
 import sys
-sys.path.append('C:\DeepLearning')
+sys.path.append("C:\DeepLearning")
 
 import argparse
 import os
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from SpecialTopic.YoloxObjectDetection.utils import get_classes
+from utils import get_classes
 from SpecialTopic.ST.build import build_detector, build_loss, build_dataset
 from SpecialTopic.ST.net.weight_init import weights_init_yolox
 from SpecialTopic.ST.net.lr_scheduler import get_lr_scheduler_yolox, set_optimizer_lr_yolox
 from SpecialTopic.ST.utils import get_logger
 import numpy as np
 from torch.backends import cudnn
-from SpecialTopic.YoloxObjectDetection.utils_fit import fit_one_epoch
+from utils_fit import fit_one_epoch
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+# On develop02 writing
 
-def get_classes(classes_path):
-    with open(classes_path) as f:
-        class_name = f.readlines()
-    class_names = [c.strip() for c in class_name]
-    return class_names, len(class_names)
 
 def parse_args():
     parser = argparse.ArgumentParser('YoloX Training')
     # 比較常需要調整的部分
     # 預訓練權重位置，如果沒有要使用就填 'none'
-    parser.add_argument('--models-path', type=str, default='./Yolox_l.pth')
+    parser.add_argument('--models-path', type=str, default='C:/xampp/htdocs/API/eating/python/ObjectDetection/Train/Yolox_l.pth')
     # 使用的模型大小['nano', 'tiny', 's', 'l', 'm', 'x']
     parser.add_argument('--phi', type=str, default='l')
     # 一個batch大小
     parser.add_argument('--batch-size', type=int, default=2)
     # 類別文件
-    parser.add_argument('--classes-path', default=r'C:\Dataset\FoodDetectionDataset\SideDish\classes.txt', type=str)
+    parser.add_argument('--classes-path', default='C:/Dataset/FoodDetectionDataset/SideDish/classes.txt', type=str)
     # 訓練標註文件
-    parser.add_argument('--train-annotation-path', default=r'C:\Dataset\FoodDetectionDataset\SideDish\2012_train.txt',
+    parser.add_argument('--train-annotation-path', default='C:/Dataset/FoodDetectionDataset/SideDish/2012_train.txt',
                         type=str)
     # 驗證標註文件
     parser.add_argument('--val-annotation-path', default='none',
@@ -47,9 +43,9 @@ def parse_args():
     # 初始Epoch
     parser.add_argument('--Init-Epoch', type=int, default=0)
     # 解除骨幹凍結epoch，如果沒有使用預訓練權重建議設定成與Init-Epoch相同
-    parser.add_argument('--Freeze_Epoch', type=int, default=50)
+    parser.add_argument('--Freeze_Epoch', type=int, default=2)
     # 總訓練Epoch數
-    parser.add_argument('--UnFreeze_Epoch', type=int, default=300)
+    parser.add_argument('--UnFreeze_Epoch', type=int, default=2)
     # 是否先凍結backbone部分，到模型較為穩定時解除
     parser.add_argument('--Freeze-Train', action='store_false')
     # 最大學習率
@@ -64,7 +60,7 @@ def parse_args():
 
     # 保存資料以及訓練流程相關設定
     # 多少Epoch會強制保存模型權重
-    parser.add_argument('--save-period', type=int, default=10)
+    parser.add_argument('--save-period', type=int, default=1)
     # 是否保存最佳訓練損失
     parser.add_argument('--best-train-loss', action='store_false')
     # 是否保存最佳驗證損失
@@ -79,7 +75,7 @@ def parse_args():
     parser.add_argument('--eval-period', type=int, default=1)
     # mAP計算需使用的coco文件
     parser.add_argument('--coco-json-file', type=str,
-                        default=r'C:\Dataset\FoodDetectionDataset\SideDish\self_annotation.json')
+                        default='C:/Dataset/FoodDetectionDataset/SideDish\self_annotation.json')
     # DataLoader使用的cpu數量
     parser.add_argument('--num-workers', type=int, default=1)
 
@@ -103,19 +99,14 @@ def parse_args():
     # 要傳送到哪個對象，目前一但開始訓練就固定傳送對象，可以一次傳送給多人
     parser.add_argument('--send-to', type=str, default=[], nargs='+')
     # 多少個epoch會將結果傳遞
-    parser.add_argument('--save-log-period', type=int, default=10)
-    # 將數據進打包(from chris)
+    parser.add_argument('--save-log-period', type=int, default=1)
     args = parser.parse_args()
     return args
 
 
-def main(uid, storageRoot):
+def main():
     args = parse_args()
     ngpus_per_node = torch.cuda.device_count()
-    args.models_path = "C:\Checkpoint\Yolox\Yolox_l.pth"
-    args.classes_path = os.path.join(storageRoot, uid, "ObjectDetection", "classes.txt")
-    args.train_annotation_path = os.path.join(storageRoot, uid, "ObjectDetection", "2012_train.txt")
-    args.coco_json_file = os.path.join(storageRoot, uid, "ObjectDetection", "self_annotation.json")
     if args.distributed:
         raise NotImplementedError('目前暫未支持分布式訓練')
     else:
@@ -154,9 +145,9 @@ def main(uid, storageRoot):
                 no_load_key.append(k)
         model_dict.update(temp_dict)
         model.load_state_dict(model_dict)
-        if local_rank == 0:
-            print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
-            print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
+        # if local_rank == 0:
+            # print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
+        #     print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
     loss_cfg = {
         'type': 'YOLOLoss',
         'num_classes': num_classes,
@@ -202,6 +193,7 @@ def main(uid, storageRoot):
             pg0.append(v.weight)
         elif hasattr(v, "weight") and isinstance(v.weight, nn.Parameter):
             pg1.append(v.weight)
+    print("Aasdfasdf")
     optimizer = {
         'adam': torch.optim.Adam(pg0, Init_lr_fit, betas=(args.momentum, 0.999)),
         'sgd': torch.optim.SGD(pg0, Init_lr_fit, momentum=args.momentum, nesterov=True)
@@ -214,7 +206,7 @@ def main(uid, storageRoot):
     lr_scheduler_func = get_lr_scheduler_yolox(args.lr_decay_type, Init_lr_fit, Min_lr_fit, args.UnFreeze_Epoch)
     assert os.path.isfile(args.train_annotation_path), '需提供標註文件'
     if args.val_annotation_path == 'none':
-        print('未指定驗證標註文件，這裡使用訓練文件作為代替')
+        print('No val')
         args.val_annotation_path = args.train_annotation_path
     with open(args.train_annotation_path, encoding='utf-8') as f:
         train_lines = f.readlines()
@@ -276,9 +268,9 @@ def main(uid, storageRoot):
         'train_loss': list(), 'val_loss': list(), 'mAP': list()
     }
     if args.send_email:
-        logger = get_logger(save_info=save_info, email_sender=args.email_sender, email_key=args.email_key)
+        logger = get_logger(save_info=save_info, logger_root=args.save_dir, email_sender=args.email_sender, email_key=args.email_key)
     else:
-        logger = get_logger(save_info=save_info)
+        logger = get_logger(save_info=save_info, logger_root=args.save_dir)
     for epoch in range(args.Init_Epoch, args.UnFreeze_Epoch):
         if epoch > args.Freeze_Epoch and not UnFreeze_flag and args.Freeze_Train:
             batch_size = Unfreeze_batch_size
@@ -306,3 +298,6 @@ def main(uid, storageRoot):
                       args.save_dir, num_classes, local_rank, args.eval_period, args.coco_json_file,
                       training_state, best_train_loss, best_val_loss, best_mAP, save_optimizer,
                       logger, args.send_to, args.save_log_period)
+
+if __name__ == "__main__":
+    main()

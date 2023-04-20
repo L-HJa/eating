@@ -8,7 +8,6 @@ class modelWeight {
     // 支援的食物類型以及資料類別
     private static $supportFoodType = array("Donburi", "SoupRice", "Rice", "Countable", "SoupNoodle", "Noodle", "SideDish", "SolidSoup", "Soup");
     private static $supportDataType = array("ObjectDetection", "Segmentation");
-
     private static $storageRoot = "D:/Storage";
 
     // 上傳目標檢測訓練資料
@@ -69,7 +68,7 @@ class modelWeight {
                 return array("商家不存在", 404, "Fail");
             }
 
-            $commend = "C:/Anaconda/envs/pytorch/python.exe python/GenerateYoloXTrainData.py $uid $root";
+            $commend = "python python/ObjectDetection/YoloXTrain.py $uid $root";
             exec($commend, $out);
             return array($out, 200, "Success");
         } else {

@@ -1,10 +1,11 @@
 import os
 import sys
+sys.stderr = sys.stdout
 import shutil
 import cv2
 from YoloXTrainDataHelper import main as transferToCoco
-# 由於YoloxObjectDetection不是module所以無法使用sys引入，看是不是要把它變成module比較快
-# from YoloxTrain import main as yoloxTrain
+import subprocess
+# from Train.train import main as yoloxTrain
 
 def main(uid, storageRoot):
     changeFileName(uid=uid, storageRoot=storageRoot)
@@ -12,7 +13,8 @@ def main(uid, storageRoot):
     createTrainTxt(uid=uid, storageRoot=storageRoot)
     sourcePath = os.path.join(storageRoot, uid, "ObjectDetection")
     transferToCoco(source_path=sourcePath)
-    # yoloxTrain(uid=uid, storageRoot=storageRoot)
+    trainObjectDetectionModel(uid=uid, storageRoot=storageRoot)
+
     print("Success")
 
 # 更新檔案名稱
@@ -85,6 +87,15 @@ def createTrainTxt(uid, storageRoot):
             f.write(annotation)
             f.write('\n')
 
+def trainObjectDetectionModel(uid, storageRoot):
+    classesPath = os.path.join(storageRoot, uid, "ObjectDetection", "classes.txt")
+    trainAnnotationPath = os.path.join(storageRoot, uid, "ObjectDetection", "2012_train.txt")
+    cocoJsonFile = os.path.join(storageRoot, uid, "ObjectDetection", "self_annotation.json")
+    savePath = os.path.join(storageRoot, uid, "ObjectDetection", "checkpoints")
+    commend = f"conda activate pytorch && python C:/xampp/htdocs/API/eating/python/ObjectDetection/Train/train.py --classes-path {classesPath} --train-annotation-path {trainAnnotationPath} --coco-json-file {cocoJsonFile} --save-dir {savePath}"
+    p = subprocess.Popen(commend, shell=True)
+    p.wait()
+    print(p.returncode)
 
 if __name__ == '__main__':
     uid = sys.argv[1]

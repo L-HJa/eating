@@ -1,6 +1,9 @@
 import json
 import sys
 import argparse
+import subprocess
+
+from PIL import Image
 
 def args_parse():
     parser = argparse.ArgumentParser()
@@ -13,8 +16,11 @@ def saveFileWithArgs():
     print(args.file_name)
 
 def saveFile(fileName, info):
-    with open(fileName + ".json", "w") as f:
-        json.dump(info, f)
+    commend = "conda activate pytorch && python C:/xampp/htdocs/API/eating/python/t2.py"
+
+    p = subprocess.Popen(commend, shell=True)
+    p.wait()
+    print(p.returncode)
     print("Success Save")
 
 if __name__ == "__main__":
