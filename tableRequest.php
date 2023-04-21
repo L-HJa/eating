@@ -35,7 +35,7 @@ class tableRequest{
         }
     }
     
-    // POST -------------------------------------------------------------------
+    // POST 新增table -------------------------------------------------------------------
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
         if(Utility::checkIsValidData(["merchantUid", "name", "capacity", "offset"], $body)) {
@@ -65,7 +65,7 @@ class tableRequest{
         }
     }
 
-    // Put -------------------------------------------------------------------
+    // Put 更新tsble -------------------------------------------------------------------
     // 對一張卓的資料進行修改
     private static function putFunc() {
         $body = json_decode(file_get_contents('php://input'), true);
@@ -262,5 +262,41 @@ class tableRequest{
             return array("缺少必要資料", 403, "Fail");
         }
     }
+
+
+    // Customer ------------------------------------------------------------------------------------------
+    // 店家所有桌子(回傳每桌foodRemainTime最多的數值) ->         -1: 隱藏, 0:空桌, num: 剩餘時間        [未測試]
+    public static function AllTableWithFoodInfo(){
+        $body = json_decode(file_get_contents('php://input'));
+        if(Utility::checkIsValidData(['merchantUid'], $body)){
+            $merchantUid = $body['merchantUid'];
+            
+            $merchant_sqlQuery = "SELECT * FROM merchant WHERE uid = '$mechantUid";
+            $viewType = $merchant_data['typeOfCustomerView'];   // 0:1+2;   1:等待時間;     2:顯示空桌	
+
+            $results = array();
+            $table_sqlQuery = "SELECT * FROM tablelist WHERE merchantUid = '$merchantUid' ORDER BY name";
+            $table_data = MysqlUtility::MysqlQuery($table_sqlQuery);
+            
+            $table_nums = mysqli_num_rows($table_data);
+            // if($table_nums == 0)    return array("無此商家", 403, "Fail");
+            while($table_nums != 0){
+                $table_row = mysqli_fetch_array($table_data, MYSQLI_ASSOC);
+                $tableUid = $table_row['uid'];
+                $tableName = $table_row['name'];
+                // foodRemainTime 最大值
+                $food_sqlQuery = "SELECT * FROM food WHERE tableUid = '$tableUid' ORDER BY foodRemainTime DESC";
+                $food_data = MysqlUtility::MysqlQuery($food_sqlQuery);
+                $food_row = mysqli_fetch_array($food_data, MYSQLI_ASSOC);
+                $results['$table_name'] = $food_row['foodRemainTime'];
+                $table_nums -= 1;
+            }
+            return array($results, 200, "Success");
+        }else{
+            return array("缺少必要資訊", 401, "Fail");
+        }
+    }
+
+
 }
 ?>
