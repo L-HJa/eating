@@ -100,7 +100,7 @@ class signinRequest{
             return array("創建成功", 200, 'Success');
         }else{
             // return "something is loss.";
-            return array("漏填必填", 401, 'FailSignin');
+            return array("缺少必要資訊", 401, 'Fail');
             //(name, email, password為必填項目)
         }
     }
