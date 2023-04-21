@@ -14,19 +14,18 @@ class loginRequest{
             return self::$method_Func($_REQUEST);
         }else{ 
             // return"is not post";
-            return array("傳入格式錯誤", 400, 'FailSignin');
+            return array("傳入格式錯誤", 400, 'Fail');
         }
     }
 
     // POST 
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if(Utility::checkIsValidData(['email', 'password', 'role'], $body)) {
+        if(Utility::checkIsValidData(['email', 'password'], $body)) {
             $email = $body['email'];
             $password = $body['password'];
-            $role =  $body['role'];
 
-            $sql_findHashPassword = "SELECT * FROM $role WHERE email = '$email'";
+            $sql_findHashPassword = "SELECT * FROM merchant WHERE email = '$email'";
             $data = MysqlUtility::MysqlQuery($sql_findHashPassword);
 
             // 存在&帳密正確
@@ -58,8 +57,7 @@ class loginRequest{
             $method_Func = $method.'Func_cus';
             return self::$method_Func($_REQUEST);
         }else{ 
-            // return"is not post";
-            return array("傳入格式錯誤", 400, 'FailSignin');
+            return array("傳入格式錯誤", 400, 'Fail');
         }
     }
 
