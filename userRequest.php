@@ -12,7 +12,7 @@ class userRequest{
             $method_Func = $method.'Func';
             return self::$method_Func($_REQUEST);
         }else{
-            return array("傳入格式錯誤", 400, 'FailSignin');
+            return array("傳入格式錯誤", 400, 'Fail');
         }
     }
 
@@ -57,7 +57,7 @@ class userRequest{
                 return array("更新失敗 無此帳號", 403, 'Fail');
             }
         }else{
-            return array("漏填必填", 401, 'Fail');
+            return array("缺少必要資料", 401, 'Fail');
         }
         
 
@@ -82,7 +82,7 @@ class userRequest{
             }
             
         }else{
-            return array("漏填必填", 401, 'Fail');
+            return array("缺少必要資料", 401, 'Fail');
         }
     }
 
@@ -137,7 +137,7 @@ class userRequest{
                 return array("更新失敗 無此帳號", 403, 'Fail');
             }
         }else{
-            return array("漏填必填", 401, 'Fail');
+            return array("缺少必要資料", 401, 'Fail');
         }
         
 
@@ -161,7 +161,7 @@ class userRequest{
             }
             
         }else{
-            return array("漏填必填", 401, 'Fail');
+            return array("缺少必要資料", 401, 'Fail');
         }
     }
 }
