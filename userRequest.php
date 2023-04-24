@@ -3,7 +3,7 @@ require('connectMYSQL.php');
 require_once('utility.php');
 
 class userRequest{
-    private static $method_type = array('put', 'delete');
+    private static $method_type = array('get', 'put', 'delete');
 
     // merchant -------------------------------------------------------------------
     public static function getRequest(){
@@ -97,6 +97,22 @@ class userRequest{
         }else{
             return array("傳入格式錯誤", 400, 'FailSignin');
         }
+    }
+
+    // GET 獲得所有店家資訊
+    private static function getFunc_cus(){
+        $sql_query = "SELECT uid, name FROM merchant ORDER BY uid";
+        $data = MysqlUtility::MysqlQuery($sql_query);
+        $result = array();
+        $numOfMerchant = mysqli_num_rows($data);
+        $cnt = 0;
+        while($numOfMerchant != 0){
+            $row = mysqli_fetch_array($data);
+            $result[$cnt] = array( "uid" => $row['uid'], "name" => $row['name']); 
+            $numOfMerchant -= 1;
+            $cnt += 1;
+        }
+        return array($result, 200, "Success");
     }
 
     // PUT Update
