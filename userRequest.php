@@ -99,24 +99,6 @@ class userRequest{
         }
     }
 
-    // GET 獲得所有店家資訊
-    private static function getFunc_cus(){
-        $body = json_decode(file_get_contents('php://input'), true);
-        $name = $body['name'];
-        $sql_query = "SELECT * FROM merchant  WHERE name LIKE '%$name%' ORDER BY uid";
-        $data = MysqlUtility::MysqlQuery($sql_query);
-        $result = array();
-        $numOfMerchant = mysqli_num_rows($data);
-        $cnt = 0;
-        while($numOfMerchant != 0){
-            $row = mysqli_fetch_array($data);
-            $result[$cnt] = array( "uid" => $row['uid'], "name" => $row['name'], "photo" => $row['photo'], "location" => $row['location']); 
-            $numOfMerchant -= 1;
-            $cnt += 1;
-        }
-        return array($result, 200, "Success");
-    }
-
     // PUT Update
     private static function putFunc_cus(){
         $body = json_decode(file_get_contents('php://input'), true);
@@ -182,6 +164,52 @@ class userRequest{
             return array("缺少必要資料", 401, 'Fail');
         }
     }
+
+
+    // post 獲得關鍵字相關的店家資訊
+    public static function getFunc_cus_keyName(){
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(['name'], $body)){
+            $name = $body['name'];
+            $sql_query = "SELECT * FROM merchant  WHERE name LIKE '%$name%' ORDER BY uid";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            $result = array();
+            $numOfMerchant = mysqli_num_rows($data);
+            $cnt = 0;
+            if($numOfMerchant == 0) return array("無此名稱的店家", 201, "Success");
+            while($numOfMerchant != 0){
+                $row = mysqli_fetch_array($data);
+                $result[$cnt] = array( "uid" => $row['uid'], "name" => $row['name'], "photo" => $row['photo'], "location" => $row['location']); 
+                $numOfMerchant -= 1;
+                $cnt += 1;
+            }
+            return array($result, 200, "Success");
+        }else{
+            return array("缺少必要資料", 401, "Fail");
+        }
+    }
+    // post 獲得指定店家的資訊
+    public static function getFunc_cus_getDetails(){
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(['uid'], $body)){
+            $uid = $body['uid'];
+            $sql_query = "SELECT * FROM merchant  WHERE uid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) == 0) return array("無此店家", 403, "Fail");
+            $row = mysqli_fetch_array($data);
+            $result['uid'] = $row['uid']; 
+            $result['name'] = $row['name']; 
+            $result['phoneNumber'] = $row['phoneNumber']; 
+            $result['location'] = $row['location']; 
+            $result['intro'] = $row['intro']; 
+            $result['photo'] = $row['photo']; 
+            return array($result, 200, "Success");
+        }else{
+            return array("缺少必要資料", 401, "Fail");
+        }
+    }
+
+
 }
 
 ?>
