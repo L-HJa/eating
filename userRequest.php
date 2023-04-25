@@ -101,14 +101,16 @@ class userRequest{
 
     // GET 獲得所有店家資訊
     private static function getFunc_cus(){
-        $sql_query = "SELECT uid, name FROM merchant ORDER BY uid";
+        $body = json_decode(file_get_contents('php://input'), true);
+        $name = $body['name'];
+        $sql_query = "SELECT * FROM merchant  WHERE name LIKE '%$name%' ORDER BY uid";
         $data = MysqlUtility::MysqlQuery($sql_query);
         $result = array();
         $numOfMerchant = mysqli_num_rows($data);
         $cnt = 0;
         while($numOfMerchant != 0){
             $row = mysqli_fetch_array($data);
-            $result[$cnt] = array( "uid" => $row['uid'], "name" => $row['name']); 
+            $result[$cnt] = array( "uid" => $row['uid'], "name" => $row['name'], "photo" => $row['photo'], "location" => $row['location']); 
             $numOfMerchant -= 1;
             $cnt += 1;
         }
