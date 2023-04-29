@@ -81,7 +81,7 @@ class modelWeight {
                 ];
                 return array($result, 201, "Reject");
             } else {
-                $sql_query = "INSERT INTO train (merchantUid, trainType) VALUES ('$uid', 'objectDetection')";
+                $sql_query = "INSERT INTO train (merchantUid, trainType) VALUES ('$uid', '第一階段')";
                 MysqlUtility::MysqlQuery($sql_query);
             }
 
@@ -90,6 +90,31 @@ class modelWeight {
             return array($out, 200, "Success");
         } else {
             return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 查詢是否正在訓練
+    static public function checkIsTrain() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid"], $body)) {
+            $uid = $body["merchantUid"];
+            $sql_query = "SELECT * FROM train WHERE merchantUid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) > 0) {
+                $trainInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
+                $trainType = $trainInfo["trainType"];
+                $startTime = $trainInfo["startTime"];
+                $result = [
+                    "status" => "Training",
+                    "trainType" => $trainType,
+                    "startTime" => $startTime
+                ];
+                return array($result, 200, "Training");
+            } else {
+                return array("無正在訓練", 201, "No training");
+            }
+        } else {
+            return array("缺少必要資訊", 403, "Fail");
         }
     }
 
