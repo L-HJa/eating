@@ -265,4 +265,95 @@ class modelWeight {
     static private function checkPhotoIsManyEnough() {
 
     }
+
+    // 獲取目標檢測的模型資料
+    static public function fetchObjectDetectionModelInfo() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid"], $body)) {
+            $uid = $body["merchantUid"];
+            $rootPath = self::$storageRoot."/$uid"."/ObjectDetectionWeight";
+
+            $sql_query = "SELECT * FROM objectDetectionModelSelect WHERE merchantUid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            $selectFileName = "";
+            if(mysqli_num_rows($data) > 0) {
+                $trainModelSelectInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
+                $selectFileName = $trainModelSelectInfo["modelName"];
+            }
+
+            if(is_dir($rootPath)) {
+                $modelFiles = scandir($rootPath);
+                $modelFiles = array_slice($modelFiles, 2);
+                $modelCount = strval(count($modelFiles));
+                $result = array();
+                for($i=0;$i<$modelCount;$i++) {
+                    $fileName = explode(".", $modelFiles[$i])[0];
+                    $result[$i]["name"] = $fileName;
+                    $info = explode(".", explode("_", $fileName)[1])[0];
+                    $result[$i]["recommend"] = $info;
+                    if($fileName == $selectFileName) {
+                        $result[$i]["choose"] = 1;
+                    } else {
+                        $result[$i]["choose"] = 0;
+                    }
+                }
+                return array($result, 200, "Success");
+            } else {
+                return array("無自定義權重", 201, "Success");
+            }
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 更新模型名稱
+    static public function changeObjectDetectionWeightName() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid", "oldName", "newName"], $body)) {
+            $uid = $body["merchantUid"];
+            $oldName = $body["oldName"];
+            $newName = $body["newName"];
+
+            $rootPath = self::$storageRoot."/$uid"."/ObjectDetectionWeight";
+            $oldFilePath = $rootPath."/$oldName".".pth";
+            if(!is_file($oldFilePath)) {
+                return array("查無權重資料", 404, "Not Found Weight File");
+            }
+            $newFilePath = $rootPath."/$newName".".pth";
+            rename($oldFilePath, $newFilePath);
+            return array("Success", 200, "Success");
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 設定商家選擇的權重
+    static public function objectDetectionModelSelected() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid", "fileName", "reset"], $body)) {
+            $uid = $body["merchantUid"];
+            $fileName = $body["fileName"];
+            $reset = $body["reset"];
+
+            if($reset == 1) {
+                $sql_query = "DELETE FROM objectDetectionModelSelect  WHERE merchantUid = $uid";
+                $_ = MysqlUtility::MysqlQuery($sql_query);
+                return array("Success", 200, "Success");
+            }
+            $sql_query = "SELECT * FROM objectDetectionModelSelect WHERE merchantUid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) > 0) {
+                // 更新資料庫內容
+                $sql_query = "UPDATE objectDetectionModelSelect SET modelName = '$fileName' WHERE merchantUid = '$uid'";
+                $_ = MysqlUtility::MysqlQuery($sql_query);
+            } else {
+                // 新增資料庫內容
+                $sql_query = "INSERT INTO objectDetectionModelSelect (merchantUid, modelName) value ('$uid', '$fileName')";
+                $_ = MysqlUtility::MysqlQuery($sql_query);
+            }
+            return array("Success", 200, "Success");
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
 }
