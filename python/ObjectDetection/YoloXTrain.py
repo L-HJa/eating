@@ -5,17 +5,30 @@ import shutil
 import cv2
 from YoloXTrainDataHelper import main as transferToCoco
 import subprocess
+import requests
+import json
 # from Train.train import main as yoloxTrain
 
 def main(uid, storageRoot):
+    # savePid(uid=uid)
     changeFileName(uid=uid, storageRoot=storageRoot)
     createTrainClassesTxt(uid=uid, storageRoot=storageRoot)
     createTrainTxt(uid=uid, storageRoot=storageRoot)
     sourcePath = os.path.join(storageRoot, uid, "ObjectDetection")
     transferToCoco(source_path=sourcePath)
     trainObjectDetectionModel(uid=uid, storageRoot=storageRoot)
-
+    deleteTrain(uid=uid)
     print("Success")
+
+# 將正在訓練的狀態刪除
+def deleteTrain(uid):
+    databaseUrl = "http://120.126.151.186/API/eating/model-weight/delete-train-status"
+    data = {
+        "uid": uid
+    }
+    json_data = json.dumps(data)
+    _ = requests.post(databaseUrl, data=json_data)
+
 
 # 更新檔案名稱
 def changeFileName(uid, storageRoot):
@@ -92,7 +105,7 @@ def trainObjectDetectionModel(uid, storageRoot):
     trainAnnotationPath = os.path.join(storageRoot, uid, "ObjectDetection", "2012_train.txt")
     cocoJsonFile = os.path.join(storageRoot, uid, "ObjectDetection", "self_annotation.json")
     savePath = os.path.join(storageRoot, uid, "ObjectDetection", "checkpoints")
-    commend = f"conda activate pytorch && python C:/xampp/htdocs/API/eating/python/ObjectDetection/Train/train.py --classes-path {classesPath} --train-annotation-path {trainAnnotationPath} --coco-json-file {cocoJsonFile} --save-dir {savePath}"
+    commend = f"conda activate pytorch && python C:/xampp/htdocs/API/eating/python/ObjectDetection/Train/train.py --uid {uid} --classes-path {classesPath} --train-annotation-path {trainAnnotationPath} --coco-json-file {cocoJsonFile} --save-dir {savePath}"
     p = subprocess.Popen(commend, shell=True)
     p.wait()
     print(p.returncode)

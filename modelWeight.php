@@ -68,9 +68,75 @@ class modelWeight {
                 return array("商家不存在", 404, "Fail");
             }
 
+            $sql_query = "SELECT * FROM train WHERE merchantUid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) > 0) {
+                $trainInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
+                $trainType = $trainInfo["trainType"];
+                $startTime = $trainInfo["startTime"];
+                $result = [
+                    "status" => "Reject",
+                    "trainType" => $trainType,
+                    "startTime" => $startTime
+                ];
+                return array($result, 201, "Reject");
+            } else {
+                $sql_query = "INSERT INTO train (merchantUid, trainType) VALUES ('$uid', 'objectDetection')";
+                MysqlUtility::MysqlQuery($sql_query);
+            }
+
             $commend = "python python/ObjectDetection/YoloXTrain.py $uid $root";
             exec($commend, $out);
             return array($out, 200, "Success");
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 將訓練的python執行pid保存
+    static public function savePythonPid() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["uid", "pid"], $body)) {
+            $uid = $body["uid"];
+            $pid = $body["pid"];
+            $sql_query = "UPDATE train SET pid = '$pid' WHERE merchantUid = '$uid'";
+            $_ = MysqlUtility::MysqlQuery($sql_query);
+            return array("Success", 200, "Success");
+        } else {
+            return array("缺少資料", 403, "Fail");
+        }
+    }
+
+    // 移除正在訓練的狀態
+    static public function deleteTrainStatus() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["uid"], $body)) {
+            $uid = $body["uid"];
+            $sql_query = "DELETE FROM train WHERE merchantUid = '$uid'";
+            $_ = MysqlUtility::MysqlQuery($sql_query);
+            return array("Success", 200, "Success");
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 取消訓練
+    static public function stopTrain() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid"], $body)) {
+            $uid = $body["merchantUid"];
+            $sql_query = "SELECT * FROM train WHERE merchantUid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            $trainInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
+            $pid = $trainInfo["pid"];
+            if($pid == 0) {
+                return array("請稍後再試，目前尚未開始", 201, "Wait");
+            }
+            $commend = "taskkill /pid $pid /f";
+            exec($commend, $out);
+            $sql_query = "DELETE FROM train WHERE merchantUid = '$uid'";
+            $_ = MysqlUtility::MysqlQuery($sql_query);
+            return array("Success", 200, "Success");
         } else {
             return array("缺少必要資料", 403, "Fail");
         }

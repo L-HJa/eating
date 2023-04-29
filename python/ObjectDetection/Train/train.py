@@ -15,12 +15,15 @@ import numpy as np
 from torch.backends import cudnn
 from utils_fit import fit_one_epoch
 import os
+import requests
+import json
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # On develop02 writing
 
 
 def parse_args():
     parser = argparse.ArgumentParser('YoloX Training')
+    parser.add_argument('--uid', type=str)
     # 比較常需要調整的部分
     # 預訓練權重位置，如果沒有要使用就填 'none'
     parser.add_argument('--models-path', type=str, default='C:/xampp/htdocs/API/eating/python/ObjectDetection/Train/Yolox_l.pth')
@@ -106,6 +109,8 @@ def parse_args():
 
 def main():
     args = parse_args()
+    uid = args.uid
+    savePid(uid=uid)
     ngpus_per_node = torch.cuda.device_count()
     if args.distributed:
         raise NotImplementedError('目前暫未支持分布式訓練')
@@ -298,6 +303,17 @@ def main():
                       args.save_dir, num_classes, local_rank, args.eval_period, args.coco_json_file,
                       training_state, best_train_loss, best_val_loss, best_mAP, save_optimizer,
                       logger, args.send_to, args.save_log_period)
+
+
+def savePid(uid):
+    pid = os.getpid()
+    databaseUrl = "http://120.126.151.186/API/eating/model-weight/save-python-pid"
+    data = {
+        "uid": uid,
+        "pid": pid
+    }
+    json_data = json.dumps(data)
+    _ = requests.post(databaseUrl, data=json_data)
 
 if __name__ == "__main__":
     main()
