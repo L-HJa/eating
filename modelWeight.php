@@ -88,6 +88,9 @@ class modelWeight {
             if(is_dir($dir)) {
                 $folderInfo = scandir($dir);
                 $fileCount = strval(count($folderInfo) - 2);
+                if($fileCount == 0) {
+                    return array("無訓練資料", 201, "No train data on server");
+                }
                 return array($fileCount, 200, "Success");
             } else {
                 return array("資料夾狀態錯誤", 500, "Fail");
@@ -130,6 +133,10 @@ class modelWeight {
                 $result[$i]["image"] = $base64;
                 $annoData = file_get_contents($annoPath);
                 $result[$i]["anno"] = $annoData;
+                $result[$i]["target"] = substr($targetImageFilesName[$i], 0, -4);
+            }
+            if($fileCount == 0) {
+                return array("無訓練資料", 201, "No train data on server");
             }
             return array($result, 200, "Success");
         } else {
