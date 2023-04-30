@@ -17,6 +17,8 @@ from utils_fit import fit_one_epoch
 import os
 import requests
 import json
+from time import gmtime, strftime
+import shutil
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # On develop02 writing
 
@@ -198,7 +200,6 @@ def main():
             pg0.append(v.weight)
         elif hasattr(v, "weight") and isinstance(v.weight, nn.Parameter):
             pg1.append(v.weight)
-    print("Aasdfasdf")
     optimizer = {
         'adam': torch.optim.Adam(pg0, Init_lr_fit, betas=(args.momentum, 0.999)),
         'sgd': torch.optim.SGD(pg0, Init_lr_fit, momentum=args.momentum, nesterov=True)
@@ -303,6 +304,20 @@ def main():
                       args.save_dir, num_classes, local_rank, args.eval_period, args.coco_json_file,
                       training_state, best_train_loss, best_val_loss, best_mAP, save_optimizer,
                       logger, args.send_to, args.save_log_period)
+        print(f"Finish one epoch {epoch}")
+    
+    print("Save model")
+    best_map = int(training_state["mAP"])
+    save_weight_path = os.path.join(f"D:\Storage", uid, "ObjectDetectionWeight")
+    print(f"Save path {save_weight_path}")
+    if not os.path.exists(save_weight_path):
+        os.mkdir(save_weight_path)
+    current_time = strftime("%Y-%m-%d-%H-%M-%S", gmtime())
+    save_weight_path = os.path.join(save_weight_path, f"{current_time}_{best_map}.pth")
+    print(f"Save path {save_weight_path}")
+    src = os.path.join(f"D:\Storage", uid, "ObjectDetection", "checkpoints", "yolox_best_val_loss.pth")
+    print(f"Source path {src}")
+    shutil.copyfile(src, save_weight_path)
 
 
 def savePid(uid):

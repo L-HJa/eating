@@ -152,6 +152,7 @@ def fit_one_epoch(model_train, model, yolo_loss, optimizer, epoch, epoch_step, e
                 res.append(data)
         if len(res) == 0:
             print('Without detect any box, skip mAP validate.')
+            return
         else:
             print('Writing json file ...')
             with open(json_file, 'w') as f:
