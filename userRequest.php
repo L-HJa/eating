@@ -86,13 +86,6 @@ class userRequest{
         }
     }
 
-
-
-
-
-    
-
-
 }
 
 class customerRequest{
@@ -206,9 +199,10 @@ class customerGetMerchantInfo{
     // post 獲得指定店家的資訊
     public static function getDetails(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if(Utility::checkIsValidData(['uid'], $body)){
-            $uid = $body['uid'];
-            $sql_query = "SELECT * FROM merchant  WHERE uid = '$uid'";
+        if(Utility::checkIsValidData(['customerUid', 'merchantUid'], $body)){
+            $customerUid = $body['customerUid'];
+            $merchantUid = $body['merchantUid'];
+            $sql_query = "SELECT * FROM merchant  WHERE uid = '$merchantUid'";
             $data = MysqlUtility::MysqlQuery($sql_query);
             if(mysqli_num_rows($data) == 0) return array("無此店家", 403, "Fail");
             $row = mysqli_fetch_array($data);
@@ -218,13 +212,18 @@ class customerGetMerchantInfo{
             $result['location'] = $row['location']; 
             $result['intro'] = $row['intro']; 
             $result['photo'] = $row['photo']; 
+            $favorite_sqlQuery = "SELECT * FROM favorite WHERE customerUid = $customerUid AND merchantUid = $merchantUid";
+            $favorite_data = MysqlUtility::MysqlQuery($favorite_sqlQuery);
+            $result['favorite'] = (mysqli_num_rows($favorite_data) != 0);
             return array($result, 200, "Success");
         }else{
             return array("缺少必要資料", 401, "Fail");
         }
     }
+    // post 獲得指定店家的用餐資訊(剩餘量)
 }
 
+// 喜愛清單
 class customerFavorite{
     private static $method_type = array('post', 'put', 'delete');
     
@@ -254,7 +253,7 @@ class customerFavorite{
                 $merchantInfo_sqlQuery = "SELECT * FROM merchant WHERE uid = $merchantUid";
                 $merchantInfo_data = MysqlUtility::MysqlQuery($merchantInfo_sqlQuery);
                 $merchantInfo_row = mysqli_fetch_array($merchantInfo_data);
-                $result[$cnt] = array("uid" => $merchantInfo_row['uid'], "name" => $merchantInfo_row['name'], "location" => $merchantInfo_row['location'], "photo" => $merchantInfo_row['photo']);
+                $result[$cnt] = array("uid" => $merchantInfo_row['uid'], "name" => $merchantInfo_row['name'], "location" => $merchantInfo_row['location'], "photo" => $merchantInfo_row['photo'], "favorite" => True);
                 $numOfFData -= 1;
                 $cnt += 1;
             } 
@@ -280,7 +279,7 @@ class customerFavorite{
                 $sql_query = "INSERT INTO favorite (customerUid, merchantUid) VALUES ('$customerUid', '$merchantUid')";
                 MysqlUtility::MysqlQuery($sql_query);
             }
-            return array("更新成功.", 200, 'Success');    
+            return array("新增成功.", 200, 'Success');    
         }else{
             return array("缺少必要資料", 401, "Fail");
         }
