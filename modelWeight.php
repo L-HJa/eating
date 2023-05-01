@@ -288,9 +288,8 @@ class modelWeight {
                 $result = array();
                 for($i=0;$i<$modelCount;$i++) {
                     $fileName = explode(".", $modelFiles[$i])[0];
-                    $result[$i]["name"] = $fileName;
-                    $info = explode(".", explode("_", $fileName)[1])[0];
-                    $result[$i]["recommend"] = $info;
+                    $result[$i]["name"] = explode("_", $fileName)[0];
+                    $result[$i]["recommend"] = explode("_", $fileName)[1];
                     if($fileName == $selectFileName) {
                         $result[$i]["choose"] = 1;
                     } else {
@@ -309,10 +308,13 @@ class modelWeight {
     // 更新模型名稱
     static public function changeObjectDetectionWeightName() {
         $body = json_decode(file_get_contents('php://input'), true);
-        if(Utility::checkIsValidData(["merchantUid", "oldName", "newName"], $body)) {
+        if(Utility::checkIsValidData(["merchantUid", "oldName", "newName", "recommend"], $body)) {
             $uid = $body["merchantUid"];
             $oldName = $body["oldName"];
             $newName = $body["newName"];
+            $recommend = $body["recommend"];
+            $oldName = $oldName."_".$recommend;
+            $newName = $newName."_".$recommend;
 
             $rootPath = self::$storageRoot."/$uid"."/ObjectDetectionWeight";
             $oldFilePath = $rootPath."/$oldName".".pth";
@@ -330,10 +332,12 @@ class modelWeight {
     // 設定商家選擇的權重
     static public function objectDetectionModelSelected() {
         $body = json_decode(file_get_contents('php://input'), true);
-        if(Utility::checkIsValidData(["merchantUid", "fileName", "reset"], $body)) {
+        if(Utility::checkIsValidData(["merchantUid", "fileName", "recommend", "reset"], $body)) {
             $uid = $body["merchantUid"];
             $fileName = $body["fileName"];
+            $recommend = $body["recommend"];
             $reset = $body["reset"];
+            $fileName = $fileName."_".$recommend;
 
             if($reset == 1) {
                 $sql_query = "DELETE FROM objectDetectionModelSelect  WHERE merchantUid = $uid";
