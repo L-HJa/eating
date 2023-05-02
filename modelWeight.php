@@ -3,7 +3,7 @@
 require_once('connectMYSQL.php');
 require_once('utility.php');
 
-class modelWeight {
+class objectDetectionModelWeight {
 
     // 支援的食物類型以及資料類別
     private static $supportFoodType = array("Donburi", "SoupRice", "Rice", "Countable", "SoupNoodle", "Noodle", "SideDish", "SolidSoup", "Soup");
@@ -358,6 +358,88 @@ class modelWeight {
             return array("Success", 200, "Success");
         } else {
             return array("缺少必要資料", 403, "Fail");
+        }
+    }
+}
+
+// =================================================================== //
+// 以下為分割模型使用
+
+class segmentationModelWeight {
+
+    // 支援的食物類型以及資料類別
+    private static $supportFoodType = array("Donburi", "SoupRice", "Rice", "Countable", "SoupNoodle", "Noodle", "SideDish", "SolidSoup", "Soup");
+    private static $supportDataType = array("ObjectDetection", "Segmentation");
+    private static $storageRoot = "D:/Storage";
+
+    // 上傳分割資料
+    static public function uploadTrainData() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid", "foodType", "image", "imageHeight", "imageWidth", "food", "notFood"], $body)) {
+            $uid = $body["merchantUid"];
+            $foodType = $body["foodType"];
+            $imageBase64 = $body["image"];
+            $imageHeight = $body["imageHeight"];
+            $imageWidth = $body["imageWidth"];
+            $food = $body["food"];
+            $notFood = $body["notFood"];
+
+            if(!in_array($foodType, self::$supportFoodType)) {
+                return array("不支援該食物類別", 401, "Not support food type");
+            }
+
+            $fileName = uniqid().".jpg";
+            $annotationInfo = array(
+                "version" => "5.0.2",
+                "flags" => (object) array(),
+                "shapes" => array(
+                    array(
+                        "label" => "Food",
+                        "points" => $food,
+                        "group_id" => null,
+                        "shape_type" => "polygon",
+                        "flags" => (object) array()
+                    ),
+                    array(
+                        "label" => "NotFood",
+                        "points" => $notFood,
+                        "group_id" => null,
+                        "shape_type" => "polygon",
+                        "flags" => (object) array()
+                    )
+                ),
+                "imagePath" => $fileName,
+                "imageData" => null,
+                "imageHeight" => $imageHeight,
+                "imageWidth" => $imageWidth
+            );
+
+            $rootFolder = self::$storageRoot."/$uid"."/Segmentation";
+            self::createFolderIfNotFound($rootFolder);
+            $rootFolder = $rootFolder."/$foodType";
+            self::createFolderIfNotFound($rootFolder);
+            $imageFolder = $rootFolder."/images";
+            self::createFolderIfNotFound($imageFolder);
+            $annotationFolder = $rootFolder."/annotations";
+            self::createFolderIfNotFound($annotationFolder);
+
+            $annotationInfoJson = json_encode($annotationInfo, JSON_PRETTY_PRINT);
+            $annotationFilePath = $annotationFolder."/$fileName".".json";
+            file_put_contents($annotationFilePath, $annotationInfoJson);
+
+            $image = Utility::base64ImageTransform($imageBase64);
+            $imageFilePath = $imageFolder."/$fileName".".jpg";
+            file_put_contents($imageFilePath, $image);
+            return array($annotationInfo, 200, "Success");
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 若查無此資料夾就會新建一個
+    static private function createFolderIfNotFound($filePath) {
+        if(!file_exists($filePath)) {
+            mkdir($filePath);
         }
     }
 }

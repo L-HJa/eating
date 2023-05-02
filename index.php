@@ -21,7 +21,13 @@ if($user == 'merchant'){
         }
     }elseif($page == 'table'){
         require('tableRequest.php');
-        if($mode == 'all_table_info') {
+        if($mode != 'NULL'){
+            $Func = $mode;
+            $data = mercnantGetInfo::$Func();
+        }else{
+            $data = tableRequest::getRequest();
+        }
+        /*if($mode == 'all_table_info') {
             // 獲取店家所有桌子資訊，不包含桌子內的食物資訊
             $data = tableRequest::getAllTableInfo();
         } elseif($mode == 'single_table_info') {
@@ -34,7 +40,7 @@ if($user == 'merchant'){
             $data = tableRequest::checkTableIsExist();
         } else {
             $data = tableRequest::getRequest();
-        }
+        }*/
     }elseif($page == 'food'){
         require('foodRequest.php');
         $data = foodRequest::getRequest();
@@ -48,9 +54,31 @@ if($user == 'merchant'){
     }elseif($page == 'model_weight'){
         require('modelWeight.php');
         if($mode == 'upload-object-detection-single-image') {
-            $data = modelWeight::uploadObjectDetectionSingleImage();
+            $data = objectDetectionModelWeight::uploadObjectDetectionSingleImage();
         } elseif($mode == 'train-object-detection-model') {
-            $data = modelWeight::trainObjectDetectionModel();
+            $data = objectDetectionModelWeight::trainObjectDetectionModel();
+        } elseif($mode == 'object-detection-train-image-count') {
+            $data = objectDetectionModelWeight::objectDetectionTrainImageCount();
+        } elseif($mode == 'object-detection-train-image-info') {
+            $data = objectDetectionModelWeight::objectDetectionTrainImageInfo();
+        } elseif($mode == 'delete-object-detection-train-image') {
+            $data = objectDetectionModelWeight::deleteObjectDetectionTrainImage();
+        } elseif($mode == 'save-python-pid') {
+            $data = objectDetectionModelWeight::savePythonPid();
+        } elseif($mode == 'delete-train-status') {
+            $data = objectDetectionModelWeight::deleteTrainStatus();
+        } elseif($mode == 'stop-train') {
+            $data = objectDetectionModelWeight::stopTrain();
+        } elseif($mode == 'check-is-train') {
+            $data = objectDetectionModelWeight::checkIsTrain();
+        } elseif($mode == 'fetch-object-detection-model-info') {
+            $data = objectDetectionModelWeight::fetchObjectDetectionModelInfo();
+        } elseif($mode == 'change-object-detection-weight-name') {
+            $data = objectDetectionModelWeight::changeObjectDetectionWeightName();
+        } elseif($mode == 'object-detection-model-selected') {
+            $data = objectDetectionModelWeight::objectDetectionModelSelected();
+        } elseif($mode == 'upload-segmentation-single-image') {
+            $data = segmentationModelWeight::uploadTrainData();
         }
     }else{
         require('Request.php');
@@ -69,8 +97,18 @@ if($user == 'merchant'){
             $data = photoRequest::getRequest();
         }else{
             require('userRequest.php');
-            $data = userRequest::getRequest_cus();
+            if($mode == 'favorite'){
+                $data = customerFavorite::getRequest();
+            }elseif($mode != NULL){
+                $Func = $mode;
+                $data = customerGetMerchantInfo::$Func();
+            }else{
+                $data = customerRequest::getRequest();
+            }
         }
+    }elseif($page == 'food'){
+        require('foodRequest.php');
+        $data = foodRequest::getFunc_cus_foodDetails();
     }
 }
 

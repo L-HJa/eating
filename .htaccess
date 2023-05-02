@@ -11,6 +11,9 @@ RewriteRule ^user/signin$   index.php?page=user&mode=signin&user=merchant
 RewriteRule ^user/login$   index.php?page=user&mode=login&user=merchant
 
 RewriteRule ^user/customer$   index.php?page=user&mode=none&user=customer
+RewriteRule ^user/customer/favorite$   index.php?page=user&mode=favorite&user=customer
+RewriteRule ^user/customer/keyName$   index.php?page=user&mode=keyName&user=customer
+RewriteRule ^user/customer/getDetails$   index.php?page=user&mode=getDetails&user=customer
 RewriteRule ^user/signin/customer$   index.php?page=user&mode=signin&user=customer
 RewriteRule ^user/login/customer$   index.php?page=user&mode=login&user=customer
 
@@ -25,14 +28,29 @@ RewriteRule ^table/all-table-info index.php?page=table&mode=all_table_info&user=
 RewriteRule ^table/single-table-info index.php?page=table&mode=single_table_info&user=merchant
 RewriteRule ^table/all-table-with-food-info index.php?page=table&mode=all_table_with_food_info&user=merchant
 RewriteRule ^table/check-table-is-exist index.php?page=table&mode=check_table_is_exist&user=merchant
+RewriteRule ^table/get-merchantUid-by-table-id index.php?page=table&mode=get_merchantUid_by_table_id&user=merchant
 
 # food
 RewriteRule ^food  index.php?page=food&mode=NULL&user=merchant
+RewriteRule ^food/customer/getFunc_cus_foodDetails$  index.php?page=food&mode=getFunc_cus_foodDetails&user=customer
 
 #item
 RewriteRule ^item$ index.php?page=item&mode=NULL&user=merchant
 RewriteRule ^item/all-item-of-merchant$ index.php?page=item&mode=all-item-of-merchant&user=merchant
 
-#model weight
+# object detection model weight
 RewriteRule ^model-weight/upload-object-detection-single-image$ index.php?page=model_weight&mode=upload-object-detection-single-image&user=merchant
 RewriteRule ^model-weight/train-object-detection-model$ index.php?page=model_weight&mode=train-object-detection-model&user=merchant
+RewriteRule ^model-weight/object-detection-train-image-count$ index.php?page=model_weight&mode=object-detection-train-image-count&user=merchant
+RewriteRule ^model-weight/object-detection-train-image-info$ index.php?page=model_weight&mode=object-detection-train-image-info&user=merchant
+RewriteRule ^model-weight/delete-object-detection-train-image$ index.php?page=model_weight&mode=delete-object-detection-train-image&user=merchant
+RewriteRule ^model-weight/save-python-pid$ index.php?page=model_weight&mode=save-python-pid&user=merchant
+RewriteRule ^model-weight/delete-train-status$ index.php?page=model_weight&mode=delete-train-status&user=merchant
+RewriteRule ^model-weight/stop-train$ index.php?page=model_weight&mode=stop-train&user=merchant
+RewriteRule ^model-weight/check-is-train$ index.php?page=model_weight&mode=check-is-train&user=merchant
+RewriteRule ^model-weight/fetch-object-detection-model-info$ index.php?page=model_weight&mode=fetch-object-detection-model-info&user=merchant
+RewriteRule ^model-weight/change-object-detection-weight-name$ index.php?page=model_weight&mode=change-object-detection-weight-name&user=merchant
+RewriteRule ^model-weight/object-detection-model-selected$ index.php?page=model_weight&mode=object-detection-model-selected&user=merchant
+
+# segmentation model weight
+RewriteRule ^model-weight/upload-segmentation-single-image$ index.php?page=model_weight&mode=upload-segmentation-single-image&user=merchant
