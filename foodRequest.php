@@ -1,6 +1,7 @@
 <?php
 
 require('connectMYSQL.php');
+require_once('utility.php');
 
 class foodRequest{
     private static $method_type = array('post', 'put', 'delete', 'get'); 
@@ -11,7 +12,6 @@ class foodRequest{
             $method_Func = $method.'Func';
             return self::$method_Func($_REQUEST);
         }else{ 
-            // return"is not post";
             return array("傳入格式錯誤", 400, 'FailSignin');
         }
     }
@@ -19,7 +19,7 @@ class foodRequest{
     // POST -------------------------------------------------------------------
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if(!(empty($body['foodType']) || empty($body['trackId']) || empty($body['foodRemain']) || empty($body['foodRemainTime']) || empty($body['foodRemainLine']) || empty($body['timeLine']) || empty($body['tableUid']))){
+        if(Utility::checkIsValidData(['foodType', 'trackId', 'foodRemain', 'foodRemainTime', 'foodRemainLine', 'timeLine', 'tableUid'], $body)) {
             $foodType = $body['foodType'];
             $trackId = $body['trackId'];
             $foodRemain = $body['foodRemain'];
@@ -167,6 +167,60 @@ class foodRequest{
             return array("Delete All", 200, "Success");
         } else {
             return array("漏填必填", 401, "Fail Delete");
+        }
+    }
+
+}
+
+// Customer ------------------------------------------------------------------------------------------
+class customerGetFoodInfo{
+    private static $method_type = array('post'); 
+
+    public static function getRequest(){
+        $method = strtolower($_SERVER['REQUEST_METHOD']);
+        if(in_array($method, self::$method_type)){
+            $method_Func = $method.'Func';
+            return self::$method_Func($_REQUEST);
+        }else{ 
+            return array("傳入格式錯誤", 400, 'Fail');
+        }
+    }
+    // 指定店家所有桌子(回傳每桌foodRemainTime最多的數值) ->        0:空桌, num: 剩餘時間        [未測試]
+    private static function postFunc(){
+        $body = json_decode(file_get_contents('php://input'), True);
+        if(Utility::checkIsValidData(['merchantUid'], $body)){
+            $merchantUid = $body['merchantUid'];
+            $results = array();
+
+            $merchant_sqlQuery = "SELECT * FROM merchant WHERE uid = '$merchantUid'";
+            $merchant_data = MysqlUtility::MysqlQuery($merchant_sqlQuery);
+            $merchant_row = mysqli_fetch_array($merchant_data, MYSQLI_ASSOC);
+            if($merchant_row == 0)    return array("無此商家", 403, "Fail");
+            $results['merchantName'] = $merchant_row['name'];
+
+            $table_sqlQuery = "SELECT * FROM tablelist WHERE merchantUid = '$merchantUid' ORDER BY name";
+            $table_data = MysqlUtility::MysqlQuery($table_sqlQuery);
+            $table_nums = mysqli_num_rows($table_data);
+            if($table_nums == 0)    return array("此商家尚未準備好", 403, "Fail");
+            $cnt = 0;
+            while($table_nums != 0){
+                $table_row = mysqli_fetch_array($table_data, MYSQLI_ASSOC);
+                $tableUid = $table_row['uid'];
+                $tableName = $table_row['name'];
+                // foodRemainTime 最大值
+                $food_sqlQuery = "SELECT * FROM food WHERE tableUid = '$tableUid' ORDER BY foodRemainTime DESC";
+                $food_data = MysqlUtility::MysqlQuery($food_sqlQuery);
+                $food_row = mysqli_fetch_array($food_data, MYSQLI_ASSOC);
+                if(mysqli_num_rows($food_data) == 0){
+                    $results['remainTime'][$cnt] = array("tableName" => $tableName, "remainTime" => "0");
+                }else{
+                    $results['remainTime'][$cnt] = array("tableName" => $tableName, "remainTime" => $food_row['foodRemainTime']);
+                }$table_nums -= 1;
+                $cnt += 1;
+            }
+            return array($results, 200, "Success");
+        }else{
+            return array("缺少必要資訊", 401, "Fail");
         }
     }
 }
