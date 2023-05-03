@@ -168,6 +168,46 @@ class objectDetectionModelWeight {
     }
 
     // 獲取總共有多少訓練圖像
+    static public function trainImageCount() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid", "dataType"], $body)) {
+            $uid = $body["merchantUid"];
+            $dataType = $body["dataType"];
+            if(!Utility::checkIsMerchantExist($uid)) {
+                return array("商家不存在", 404, "Fail");
+            }
+            if(!in_array($dataType, self::$supportDataType)) {
+                return array("Not Support Data Type", 500, "Not Support");
+            }
+            if($dataType == "ObjectDetection") {
+                $dir = self::$storageRoot."/$uid"."/$dataType"."/imgs";
+            } else {
+                if(Utility::checkIsValidData(["foodType"], $body)) {
+                    $foodType = $body["foodType"];
+                    if(!in_array($foodType, self::$supportFoodType)) {
+                        return array("Not Support Food Type", 500, "Not Support");
+                    }
+                    $dir = self::$storageRoot."/$uid"."/$dataType"."/$foodType"."/imgs";
+                } else {
+                    return array("缺少foodType資料", 405, "Fail");
+                }
+            }
+            if(is_dir($dir)) {
+                $folderInfo = scandir($dir);
+                $fileCount = strval(count($folderInfo) - 2);
+                if($fileCount == 0) {
+                    return array("無訓練資料", 201, "No train data on server");
+                }
+                return array($fileCount, 200, "Success");
+            } else {
+                return array("0", 200, "Success");
+            }
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 獲取總共有多少訓練圖像
     static public function objectDetectionTrainImageCount() {
         $body = json_decode(file_get_contents('php://input'), true);
         if(Utility::checkIsValidData(["merchantUid"], $body)) {
@@ -388,7 +428,7 @@ class segmentationModelWeight {
                 return array("不支援該食物類別", 401, "Not support food type");
             }
 
-            $fileName = uniqid().".jpg";
+            $fileName = uniqid();
             $annotationInfo = array(
                 "version" => "5.0.2",
                 "flags" => (object) array(),
@@ -418,7 +458,7 @@ class segmentationModelWeight {
             self::createFolderIfNotFound($rootFolder);
             $rootFolder = $rootFolder."/$foodType";
             self::createFolderIfNotFound($rootFolder);
-            $imageFolder = $rootFolder."/images";
+            $imageFolder = $rootFolder."/imgs";
             self::createFolderIfNotFound($imageFolder);
             $annotationFolder = $rootFolder."/annotations";
             self::createFolderIfNotFound($annotationFolder);
@@ -431,6 +471,43 @@ class segmentationModelWeight {
             $imageFilePath = $imageFolder."/$fileName".".jpg";
             file_put_contents($imageFilePath, $image);
             return array($annotationInfo, 200, "Success");
+        } else {
+            return array("缺少必要資料", 403, "Fail");
+        }
+    }
+
+    // 訓練分割模型
+    static public function trainSegmentationModel() {
+        $body = json_decode(file_get_contents('php://input'), true);
+        if(Utility::checkIsValidData(["merchantUid"], $body)) {
+            $uid = $body["merchantUid"];
+
+            if(!Utility::checkIsMerchantExist($uid)) {
+                return array("商家不存在", 404, "Fail");
+            }
+
+            $sql_query = "SELECT * FROM train WHERE merchantUid = '$uid'";
+            $data = MysqlUtility::MysqlQuery($sql_query);
+            if(mysqli_num_rows($data) > 0) {
+                $trainInfo = mysqli_fetch_array($data, MYSQLI_ASSOC);
+                $trainType = $trainInfo["trainType"];
+                $startTime = $trainInfo["startTime"];
+                $result = [
+                    "status" => "Reject",
+                    "trainType" => $trainType,
+                    "startTime" => $startTime
+                ];
+                return array($result, 201, "Reject");
+            } else {
+                $sql_query = "INSERT INTO train (merchantUid, trainType) VALUES ('$uid', '第二階段')";
+                MysqlUtility::MysqlQuery($sql_query);
+            }
+            // 先暫時在這裡結束
+            return array("Success", 200, "Success");
+
+            $commend = "python python/Segmentation/SegmentationTrain.py $uid $root";
+            exec($commend, $out);
+            return array($out, 200, "Success");
         } else {
             return array("缺少必要資料", 403, "Fail");
         }

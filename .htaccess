@@ -31,8 +31,8 @@ RewriteRule ^table/check-table-is-exist index.php?page=table&mode=check_table_is
 RewriteRule ^table/get-merchantUid-by-table-id index.php?page=table&mode=get_merchantUid_by_table_id&user=merchant
 
 # food
-RewriteRule ^food  index.php?page=food&mode=NULL&user=merchant
-RewriteRule ^food/customer/getFunc_cus_foodDetails$  index.php?page=food&mode=getFunc_cus_foodDetails&user=customer
+RewriteRule ^food$  index.php?page=food&mode=NULL&user=merchant
+RewriteRule ^food/customer$  index.php?page=food&mode=NULL&user=customer
 
 #item
 RewriteRule ^item$ index.php?page=item&mode=NULL&user=merchant
@@ -51,6 +51,8 @@ RewriteRule ^model-weight/check-is-train$ index.php?page=model_weight&mode=check
 RewriteRule ^model-weight/fetch-object-detection-model-info$ index.php?page=model_weight&mode=fetch-object-detection-model-info&user=merchant
 RewriteRule ^model-weight/change-object-detection-weight-name$ index.php?page=model_weight&mode=change-object-detection-weight-name&user=merchant
 RewriteRule ^model-weight/object-detection-model-selected$ index.php?page=model_weight&mode=object-detection-model-selected&user=merchant
+RewriteRule ^model-weight/train-image-count$ index.php?page=model_weight&mode=train-image-count&user=merchant
 
 # segmentation model weight
 RewriteRule ^model-weight/upload-segmentation-single-image$ index.php?page=model_weight&mode=upload-segmentation-single-image&user=merchant
+RewriteRule ^model-weight/train-segmentation-model$ index.php?page=model_weight&mode=train-segmentation-model&user=merchant

@@ -57,6 +57,8 @@ if($user == 'merchant'){
             $data = objectDetectionModelWeight::uploadObjectDetectionSingleImage();
         } elseif($mode == 'train-object-detection-model') {
             $data = objectDetectionModelWeight::trainObjectDetectionModel();
+        } elseif($mode == 'train-image-count') {
+            $data = objectDetectionModelWeight::trainImageCount();
         } elseif($mode == 'object-detection-train-image-count') {
             $data = objectDetectionModelWeight::objectDetectionTrainImageCount();
         } elseif($mode == 'object-detection-train-image-info') {
@@ -79,6 +81,8 @@ if($user == 'merchant'){
             $data = objectDetectionModelWeight::objectDetectionModelSelected();
         } elseif($mode == 'upload-segmentation-single-image') {
             $data = segmentationModelWeight::uploadTrainData();
+        } elseif($mode == 'train-segmentation-model') {
+            $data = segmentationModelWeight::trainSegmentationModel();
         }
     }else{
         require('Request.php');
@@ -108,7 +112,7 @@ if($user == 'merchant'){
         }
     }elseif($page == 'food'){
         require('foodRequest.php');
-        $data = foodRequest::getFunc_cus_foodDetails();
+        $data = customerGetFoodInfo::getRequest();
     }
 }
 
