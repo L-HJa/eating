@@ -197,6 +197,7 @@ class customerGetFoodInfo{
             $merchant_row = mysqli_fetch_array($merchant_data, MYSQLI_ASSOC);
             if($merchant_row == 0)    return array("無此商家", 403, "Fail");
             $results['merchantName'] = $merchant_row['name'];
+            $results['merchantUid'] = $merchantUid;
 
             $table_sqlQuery = "SELECT * FROM tablelist WHERE merchantUid = '$merchantUid' ORDER BY name";
             $table_data = MysqlUtility::MysqlQuery($table_sqlQuery);
