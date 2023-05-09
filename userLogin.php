@@ -28,13 +28,24 @@ class loginRequest{
             $sql_findHashPassword = "SELECT * FROM merchant WHERE email = '$email'";
             $data = MysqlUtility::MysqlQuery($sql_findHashPassword);
 
-            // 存在&帳密正確
+            // merchant 存在&帳密正確
             if(mysqli_num_rows($data) > 0){
                 $row = mysqli_fetch_array($data, MYSQLI_ASSOC);
                 if(password_verify($password, $row['password'])){
                     $row['location'] = explode(',', $row['location']);
                     $row['role'] = "merchant";
 
+                    // 回傳所有個人資訊
+                    return array($row, 200, 'Success');
+                }
+            }
+
+            $sql_findHashPassword = "SELECT * FROM customer WHERE email = '$email'";
+            $data = MysqlUtility::MysqlQuery($sql_findHashPassword);
+            // customer 存在&帳密正確
+            if(mysqli_num_rows($data) > 0){
+                $row = mysqli_fetch_array($data, MYSQLI_ASSOC);
+                if(password_verify($password, $row['password'])){
                     // 回傳所有個人資訊
                     return array($row, 200, 'Success');
                 }
