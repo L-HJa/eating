@@ -21,33 +21,30 @@ class signinRequest{
     // POST 
     private static function postFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if (Utility::checkIsValidData(['name', 'email', 'password', 'role'], $body)) {    // empty($body['phoneNumber']) || empty($body['location']) 
+        if (Utility::checkIsValidData(['name', 'email', 'password'], $body)) {    // empty($body['phoneNumber']) || empty($body['location']) 
             // 必填
             $name = $body['name'];
             $email = $body['email'];
             $password = password_hash($body['password'], PASSWORD_DEFAULT);
-            $role =  ($body['role'] == 'merchant' ? 'merchant' : 'customer');
             
             // 選填
             $phoneNumber = Utility::checkIsValidData(['phoneNumber'], $body) ? $body['phoneNumber'] : "";
             $location = Utility::checkIsValidData(['location'], $body) ? $body['location'][0].','.$body['location'][1] : "";
             $photo = Utility::checkIsValidData(['photo'], $body) ? $body['photo'] : "";
 
-            $sql_findId = "SELECT * FROM $role WHERE email = '$email'";
-            $data = MysqlUtility::MysqlQuery($sql_findId);
+            $sql_findmer = "SELECT * FROM merchant WHERE email = '$email'";
+            $sql_findcus = "SELECT * FROM customer WHERE email = '$email'";
+            $datamer = MysqlUtility::MysqlQuery($sql_findmer);
+            $datacus = MysqlUtility::MysqlQuery($sql_findcus);
 
             // exist
-            if(mysqli_num_rows($data) > 0){
+            if(mysqli_num_rows($datamer) > 0 || mysqli_num_rows($datacus) > 0 ){
                 return array("帳號已存在", 403, 'Fail');
             }
 
             // create
-            $sql_query = "INSERT INTO ".$role." (name, phoneNumber, email, password, location, photo) VALUES ('$name', '$phoneNumber', '$email', '$password', '$location', '$photo')";
+            $sql_query = "INSERT INTO merchant (name, phoneNumber, email, password, location, photo) VALUES ('$name', '$phoneNumber', '$email', '$password', '$location', '$photo')";
             MysqlUtility::MysqlQuery($sql_query);
-            $data = MysqlUtility::MysqlQuery($sql_findId);
-
-            // return "create";
-            //return "Success";
             return array("創建成功", 200, 'Success');
         }else{
             // return "something is loss.";
@@ -72,7 +69,7 @@ class signinRequest{
     // POST 
     private static function postFunc_cus(){
         $body = json_decode(file_get_contents('php://input'), true);
-        if (Utility::checkIsValidData(['name', 'email', 'password'], $body)) {    // empty($body['phoneNumber']) || empty($body['location']) 
+        if (Utility::checkIsValidData(['name', 'email', 'password'], $body)) {    
             // 必填
             $name = $body['name'];
             $email = $body['email'];
@@ -82,21 +79,19 @@ class signinRequest{
             $phoneNumber = Utility::checkIsValidData(['phoneNumber'], $body) ? $body['phoneNumber'] : "";
             $photo = Utility::checkIsValidData(['photo'], $body) ? $body['photo'] : "";
 
-            $sql_findId = "SELECT * FROM customer WHERE email = '$email'";
-            $data = MysqlUtility::MysqlQuery($sql_findId);
+            $sql_findmer = "SELECT * FROM merchant WHERE email = '$email'";
+            $sql_findcus = "SELECT * FROM customer WHERE email = '$email'";
+            $datamer = MysqlUtility::MysqlQuery($sql_findmer);
+            $datacus = MysqlUtility::MysqlQuery($sql_findcus);
 
             // exist
-            if(mysqli_num_rows($data) > 0){
+            if(mysqli_num_rows($datamer) > 0 || mysqli_num_rows($datacus) > 0 ){
                 return array("帳號已存在", 403, 'Fail');
             }
 
             // create
             $sql_query = "INSERT INTO customer (name, phoneNumber, email, password, photo) VALUES ('$name', '$phoneNumber', '$email', '$password', '$photo')";
             MysqlUtility::MysqlQuery($sql_query);
-            $data = MysqlUtility::MysqlQuery($sql_findId);
-
-            // return "create";
-            //return "Success";
             return array("創建成功", 200, 'Success');
         }else{
             // return "something is loss.";
