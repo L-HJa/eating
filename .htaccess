@@ -10,7 +10,7 @@ RewriteRule ^user$   index.php?page=user&mode=none&user=merchant
 RewriteRule ^user/signin$   index.php?page=user&mode=signin&user=merchant
 RewriteRule ^user/login$   index.php?page=user&mode=login&user=merchant
 
-RewriteRule ^user/customer$   index.php?page=user&mode=none&user=customer
+RewriteRule ^user/customer$   index.php?page=user&mode=&user=customer
 RewriteRule ^user/customer/favorite$   index.php?page=user&mode=favorite&user=customer
 RewriteRule ^user/customer/keyName$   index.php?page=user&mode=keyName&user=customer
 RewriteRule ^user/customer/getDetails$   index.php?page=user&mode=getDetails&user=customer
@@ -23,7 +23,7 @@ RewriteRule ^user/photo/([0-9]+)$   index.php?page=user&mode=photo&img=$2&user=m
 
 
 # table 
-RewriteRule ^table$  index.php?page=table&mode=NULL&user=merchant
+RewriteRule ^table$  index.php?page=table&mode=&user=merchant
 RewriteRule ^table/all-table-info index.php?page=table&mode=all_table_info&user=merchant
 RewriteRule ^table/single-table-info index.php?page=table&mode=single_table_info&user=merchant
 RewriteRule ^table/all-table-with-food-info index.php?page=table&mode=all_table_with_food_info&user=merchant

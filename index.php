@@ -21,7 +21,7 @@ if($user == 'merchant'){
         }
     }elseif($page == 'table'){
         require('tableRequest.php');
-        if($mode != 'NULL'){
+        if($mode != NULL){
             $Func = $mode;
             $data = mercnantGetInfo::$Func();
         }else{
@@ -95,7 +95,7 @@ if($user == 'merchant'){
             $data = signinRequest::getRequest_cus();    
         }elseif($mode == 'login'){
             require('userLogin.php');
-            $data = loginRequest::getRequest_cus();    
+            $data = loginRequest::getRequest();    
         }elseif($mode == 'photo'){
             require('photoRequest.php');
             $data = photoRequest::getRequest();

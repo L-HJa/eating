@@ -121,7 +121,7 @@ class itemRequest{
                     }
                     return array($result, 200, "Success");
                 }else{
-                    return array("該店無物件資訊", 200, "Fail");
+                    return array("該店無物件資訊", 201, "Fail");
                 }
             }else{
                 return array("無此店家", 403, "Fail");
