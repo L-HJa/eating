@@ -62,7 +62,7 @@ class foodRequest{
     // GET Info
     private static function getFunc() {
         $body = json_decode(file_get_contents('php://input'), true);
-        if((empty($body["tableUid"]) || empty($body["trackId"]))) {
+        if(Utility::checkIsValidData(["tableUid", "trackId"], $body)) {
             return array("漏填必填", 401, 'Fail');
         }
 
@@ -88,11 +88,7 @@ class foodRequest{
     // PUT Update
     private static function putFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        # parse_str(json_decode(file_get_contents('php://input'), true), $body);
-        
-        // 這裡的uid似乎沒有作用，請確認一下，如果真實沒用請刪除
-        if(!(empty($body['foodType']) || empty($body['trackId']) || empty($body['foodRemain']) || empty($body['foodRemainTime']) || empty($body['foodRemainLine']) || empty($body['timeLine']) || empty($body['tableUid']))){
-            // $uid = $body['uid'];
+        if(Utility::checkIsValidData(["foodType", "trackId", "foodRemain", "foodRemainTime", "foodRemainLine", "timeLine", "tableUid"], $body)) {
             $foodType = $body['foodType'];
             $trackId = $body['trackId'];
             $foodRemain = $body['foodRemain'];
@@ -125,27 +121,8 @@ class foodRequest{
     // Delete
     private static function deleteFunc(){
         $body = json_decode(file_get_contents('php://input'), true);
-        // 這裡可以視情況改成使用桌子uid以及trackId來刪除
-        // if(! empty($body['uid'])){
-        //     $uid = $body['uid'];
-
-        //     // food do not exist
-        //     $sql_query = "SELECT * FROM food WHERE uid = '$uid'";
-        //     $data = MysqlUtility::MysqlQuery($sql_query);
-        //     if(mysqli_num_rows($data) == 0){
-        //         return array("table do not exist", 403, 'Fail');
-        //     }
-
-        //     $sql_query = "DELETE FROM food WHERE uid = $uid";
-        //     $data = MysqlUtility::MysqlQuery($sql_query);
-        //     // return "Delete.";
-        //     return array("Delete.", 200, 'Success');
-        // }else{
-        //     return array("漏填必填", 401, 'FailLogin');
-        // }
-
         // 直接使用tableUid以及trackId來刪除，這樣模型端就可以不用記錄下food的uid
-        if(!(empty($body['tableUid']) || empty($body['trackId']))) {
+        if(Utility::checkIsValidData(["tableUid", "trackId"], $body)) {
             $tableUid = $body['tableUid'];
             $trackId = $body['trackId'];
 
@@ -158,13 +135,13 @@ class foodRequest{
             }
             $sql_query = "delete from food where tableUid = '$tableUid' and trackId = '$trackId'";
             $_ = MysqlUtility::MysqlQuery($sql_query);
-            return array("Delete.", 200, "Success");
+            return array("刪除.", 200, "Success");
         } elseif(!(empty($body['tableUid']) || empty($body['deleteAll']))) {
             $tableUid = $body['tableUid'];
 
             $sql_query = "DELETE FROM food WHERE tableUid = '$tableUid'";
             $_ = MysqlUtility::MysqlQuery($sql_query);
-            return array("Delete All", 200, "Success");
+            return array("全部刪除", 200, "Success");
         } else {
             return array("漏填必填", 401, "Fail Delete");
         }
